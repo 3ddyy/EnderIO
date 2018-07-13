@@ -7,7 +7,7 @@ public class CombinedSignal {
   public static final @Nonnull CombinedSignal NONE = new CombinedSignal(0);
   public static final @Nonnull CombinedSignal MAX = new CombinedSignal(15);
 
-  private final int strength;
+  private int strength;
 
   public CombinedSignal(int strength) {
     this.strength = strength;
@@ -15,6 +15,18 @@ public class CombinedSignal {
 
   public int getStrength() {
     return strength;
+  }
+
+  protected void setStrength(int str) {
+    if (str > 0) {
+      if (str > 15) {
+        strength = 15;
+      } else {
+        strength = str;
+      }
+    } else {
+      strength = 0;
+    }
   }
 
   @Override

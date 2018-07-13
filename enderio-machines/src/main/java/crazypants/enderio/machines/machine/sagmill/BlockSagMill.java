@@ -51,6 +51,24 @@ public class BlockSagMill<T extends TileSagMill> extends AbstractPoweredTaskBloc
     return res;
   }
 
+  public static BlockSagMill<TileSagMill.Enhanced> create_enhanced(@Nonnull IModObject modObject) {
+    BlockSagMill<TileSagMill.Enhanced> res = new BlockSagMill<TileSagMill.Enhanced>(modObject) {
+      @Override
+      @SideOnly(Side.CLIENT)
+      public @Nonnull IRenderMapper.IItemRenderMapper getItemRenderMapper() {
+        return RenderMappers.ENHANCED_BODY_MAPPER;
+      }
+
+      @Override
+      @SideOnly(Side.CLIENT)
+      public IRenderMapper.IBlockRenderMapper getBlockRenderMapper() {
+        return RenderMappers.ENHANCED_BODY_MAPPER;
+      }
+    };
+    res.init();
+    return res;
+  }
+
   private BlockSagMill(@Nonnull IModObject modObject) {
     super(modObject);
     setShape(mkShape(BlockFaceShape.SOLID));
@@ -101,5 +119,4 @@ public class BlockSagMill<T extends TileSagMill> extends AbstractPoweredTaskBloc
       @Nonnull TileSagMill tileEntity) {
     blockStateWrapper.addCacheKey(tileEntity.getFacing()).addCacheKey(tileEntity.isActive());
   }
-
 }

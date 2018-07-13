@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -446,34 +447,42 @@ public class TileConduitBundle extends TileEntityEio implements IConduitBundle, 
   }
 
   @Override
-  public void addConduit(IServerConduit conduit) {
+  public boolean addConduit(IServerConduit conduit) {
     if (world.isRemote) {
-      return;
+      return false;
     }
-    conduit.setBundle(this);
-    getServerConduits().add(conduit);
-    conduit.onAddedToBundle();
-    dirty();
+    if (getServerConduits().size() < 9) {
+      conduit.setBundle(this);
+      getServerConduits().add(conduit);
+      conduit.onAddedToBundle();
+      dirty();
+      return true;
+    }
+    return false;
   }
 
   @Override
-  public void removeConduit(IConduit conduit) {
+  public boolean removeConduit(IConduit conduit) {
     if (conduit instanceof IServerConduit) {
-      removeConduit((IServerConduit) conduit, true);
+      return removeConduit((IServerConduit) conduit, true);
     }
+    return false;
   }
 
-  public void removeConduit(IServerConduit conduit, boolean notify) {
+  public boolean removeConduit(IServerConduit conduit, boolean notify) {
     if (world.isRemote) {
-      return;
+      return false;
     }
     conduit.onBeforeRemovedFromBundle();
-    getServerConduits().remove(conduit);
-    conduit.onAfterRemovedFromBundle();
-    conduit.setBundle(null);
-    if (notify) {
-      dirty();
+    if (getServerConduits().remove(conduit)) {
+      conduit.onAfterRemovedFromBundle();
+      conduit.setBundle(null);
+      if (notify) {
+        dirty();
+      }
+      return true;
     }
+    return false;
   }
 
   @Override
@@ -671,16 +680,18 @@ public class TileConduitBundle extends TileEntityEio implements IConduitBundle, 
   private void addConduitCores(List<CollidableComponent> result, IConduit con) {
     CollidableCache cc = CollidableCache.instance;
     Class<? extends IConduit> type = con.getCollidableType();
+    Set<CollidableComponent> components = new LinkedHashSet<>();
     if (con.hasConnections()) {
       for (EnumFacing dir : con.getExternalConnections()) {
-        result.addAll(cc.getCollidables(cc.createKey(type, getOffset(con.getBaseConduitType(), dir), null, false), con));
+        components.addAll(cc.getCollidables(cc.createKey(type, getOffset(con.getBaseConduitType(), dir), null, false), con));
       }
       for (EnumFacing dir : con.getConduitConnections()) {
-        result.addAll(cc.getCollidables(cc.createKey(type, getOffset(con.getBaseConduitType(), dir), null, false), con));
+        components.addAll(cc.getCollidables(cc.createKey(type, getOffset(con.getBaseConduitType(), dir), null, false), con));
       }
     } else {
-      result.addAll(cc.getCollidables(cc.createKey(type, getOffset(con.getBaseConduitType(), null), null, false), con));
+      components.addAll(cc.getCollidables(cc.createKey(type, getOffset(con.getBaseConduitType(), null), null, false), con));
     }
+    result.addAll(components);
   }
 
   private int getConnectionCount(@Nullable EnumFacing dir) {
@@ -702,14 +713,24 @@ public class TileConduitBundle extends TileEntityEio implements IConduitBundle, 
   public boolean hasCapability(@Nonnull Capability<?> capability, @Nullable EnumFacing facing) {
     if (capability == CapabilityFilterHolder.FILTER_HOLDER_CAPABILITY || capability == CapabilityUpgradeHolder.UPGRADE_HOLDER_CAPABILITY) {
       for (IConduit conduit : getConduits()) {
-        if (conduit.hasCapability(capability, facing))
+        if (conduit.hasCapability(capability, facing)) {
           return true;
+        }
       }
     }
 
     for (IConduit conduit : getServerConduits()) {
-      if (conduit.hasCapability(capability, facing))
+      if (conduit.hasCapability(capability, facing)) {
         return true;
+      }
+    }
+
+    if (world.isRemote) {
+      for (IConduit conduit : this.getClientConduits()) {
+        if (conduit.hasCapability(capability, facing)) {
+          return true;
+        }
+      }
     }
     return super.hasCapability(capability, facing);
   }

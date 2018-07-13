@@ -2,6 +2,7 @@ package crazypants.enderio.base.teleport;
 
 import javax.annotation.Nonnull;
 
+import com.enderio.core.common.util.BlockCoord;
 import com.enderio.core.common.util.Util;
 import com.enderio.core.common.vecmath.Vector3d;
 
@@ -20,11 +21,16 @@ import net.minecraft.world.Teleporter;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 
 public class TeleportUtil {
 
   public static boolean doTeleport(@Nonnull Entity entityLiving, @Nonnull BlockPos pos, int targetDim, boolean conserveMotion, @Nonnull TravelSource source) {
+    if (entityLiving instanceof FakePlayer) {
+      // don't even bother...
+      return false;
+    }
     if (entityLiving.world.isRemote) {
       return checkClientTeleport(entityLiving, pos, targetDim, source);
     }
@@ -32,6 +38,10 @@ public class TeleportUtil {
   }
 
   public static boolean checkClientTeleport(@Nonnull Entity entityLiving, @Nonnull BlockPos pos, int targetDim, @Nonnull TravelSource source) {
+    if (entityLiving instanceof FakePlayer) {
+      // don't even bother...
+      return false;
+    }
     TeleportEntityEvent evt = new TeleportEntityEvent(entityLiving, source, pos, targetDim);
     if (MinecraftForge.EVENT_BUS.post(evt)) {
       return false;
@@ -40,6 +50,10 @@ public class TeleportUtil {
   }
 
   public static boolean serverTeleport(@Nonnull Entity entity, @Nonnull BlockPos pos, int targetDim, boolean conserveMotion, @Nonnull TravelSource source) {
+    if (entity instanceof FakePlayer) {
+      // don't even bother...
+      return false;
+    }
 
     TeleportEntityEvent evt = new TeleportEntityEvent(entity, source, pos, targetDim);
     if (MinecraftForge.EVENT_BUS.post(evt)) {
@@ -49,6 +63,7 @@ public class TeleportUtil {
     EntityPlayerMP player = null;
     if (entity instanceof EntityPlayerMP) {
       player = (EntityPlayerMP) entity;
+      ChunkTicket.loadChunk(player, player.world, BlockCoord.get(player));
     }
     int x = pos.getX();
     int y = pos.getY();
@@ -63,6 +78,8 @@ public class TeleportUtil {
       // play sound at the dimension we are leaving for others to hear
       SoundHelper.playSound(server.getWorld(entity.dimension), entity, source.sound, 1.0F, 1.0F);
       if (player != null) {
+        ChunkTicket.loadChunk(player, toDim, pos);
+
         server.getPlayerList().transferPlayerToDimension(player, targetDim, teleporter);
         if (from == 1 && entity.isEntityAlive()) { // get around vanilla End
                                                    // hacks
@@ -90,6 +107,8 @@ public class TeleportUtil {
           return false;
         }
       }
+    } else if (player != null) {
+      ChunkTicket.loadChunk(player, player.world, pos);
     }
 
     // Force the chunk to load

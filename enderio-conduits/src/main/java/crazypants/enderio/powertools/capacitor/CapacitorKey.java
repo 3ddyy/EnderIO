@@ -3,23 +3,26 @@ package crazypants.enderio.powertools.capacitor;
 import java.util.Locale;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
-import crazypants.enderio.base.capacitor.CapacitorKeyHelper;
+import crazypants.enderio.base.Log;
 import crazypants.enderio.base.capacitor.CapacitorKeyType;
+import crazypants.enderio.base.capacitor.ICapacitorData;
 import crazypants.enderio.base.capacitor.ICapacitorKey;
 import crazypants.enderio.base.capacitor.Scaler;
-import crazypants.enderio.base.config.Config.Section;
+import crazypants.enderio.base.init.IModObject;
 import crazypants.enderio.powertools.EnderIOPowerTools;
-import crazypants.enderio.powertools.config.Config;
 import crazypants.enderio.powertools.init.PowerToolObject;
-import net.minecraftforge.common.config.Configuration;
+import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.event.RegistryEvent;
+import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
-public enum CapacitorKey implements ICapacitorKey.Computable {
+@EventBusSubscriber(modid = EnderIOPowerTools.MODID)
+public enum CapacitorKey implements ICapacitorKey {
 
-  POWER_MONITOR_POWER_INTAKE(PowerToolObject.block_power_monitor, CapacitorKeyType.ENERGY_INTAKE, Scaler.Factory.FIXED_1, 10),
-  POWER_MONITOR_POWER_BUFFER(PowerToolObject.block_power_monitor, CapacitorKeyType.ENERGY_BUFFER, Scaler.Factory.FIXED_1, 1000),
-  POWER_MONITOR_POWER_USE(PowerToolObject.block_power_monitor, CapacitorKeyType.ENERGY_USE, Scaler.Factory.FIXED_1, 5),
+  POWER_MONITOR_POWER_INTAKE(PowerToolObject.block_power_monitor, CapacitorKeyType.ENERGY_INTAKE, "intake"),
+  POWER_MONITOR_POWER_BUFFER(PowerToolObject.block_power_monitor, CapacitorKeyType.ENERGY_BUFFER, "buffer"),
+  POWER_MONITOR_POWER_USE(PowerToolObject.block_power_monitor, CapacitorKeyType.ENERGY_USE, "use"),
 
   //
   ;
@@ -28,32 +31,32 @@ public enum CapacitorKey implements ICapacitorKey.Computable {
   // /////////////////////////////////////////////////////////////////// //
   // /////////////////////////////////////////////////////////////////// //
 
-  private final @Nonnull PowerToolObject owner;
+  private final @Nonnull ResourceLocation registryName;
+  private final @Nonnull IModObject owner;
   private final @Nonnull CapacitorKeyType valueType;
-  private @Nonnull Scaler scaler;
-  private final @Nonnull String configKey;
-  private final @Nonnull Section configSection;
-  private final @Nonnull String configComment;
-  private final int defaultBaseValue;
-  private int baseValue;
 
-  private CapacitorKey(@Nonnull PowerToolObject owner, @Nonnull CapacitorKeyType valueType, @Nonnull Scaler scaler, int defaultBaseValue) {
-    this(owner, valueType, scaler, defaultBaseValue, Config.sectionCapacitor, null);
-  }
+  private @Nonnull Scaler scaler = Scaler.Factory.INVALID;
+  private int baseValue = Integer.MIN_VALUE;
 
-  private CapacitorKey(@Nonnull PowerToolObject owner, @Nonnull CapacitorKeyType valueType, @Nonnull Scaler scaler, int defaultBaseValue,
-      @Nonnull Section configSection, @Nullable String configKey) {
+  private CapacitorKey(@Nonnull IModObject owner, @Nonnull CapacitorKeyType valueType, @Nonnull String shortname) {
     this.owner = owner;
     this.valueType = valueType;
-    this.scaler = scaler;
-    this.configKey = CapacitorKeyHelper.createConfigKey(this, configKey);
-    this.configSection = configSection;
-    this.configComment = CapacitorKeyHelper.localizeComment(EnderIOPowerTools.lang, this.configSection, this.configKey);
-    this.baseValue = this.defaultBaseValue = defaultBaseValue;
+    this.registryName = new ResourceLocation(owner.getRegistryName().getResourceDomain(),
+        owner.getRegistryName().getResourcePath() + "/" + shortname.toLowerCase(Locale.ENGLISH));
   }
 
   @Override
-  public @Nonnull PowerToolObject getOwner() {
+  public int get(@Nonnull ICapacitorData capacitor) {
+    return (int) (baseValue * scaler.scaleValue(capacitor.getUnscaledValue(this)));
+  }
+
+  @Override
+  public float getFloat(@Nonnull ICapacitorData capacitor) {
+    return baseValue * scaler.scaleValue(capacitor.getUnscaledValue(this));
+  }
+
+  @Override
+  public @Nonnull IModObject getOwner() {
     return owner;
   }
 
@@ -63,13 +66,8 @@ public enum CapacitorKey implements ICapacitorKey.Computable {
   }
 
   @Override
-  public @Nonnull String getName() {
+  public @Nonnull String getLegacyName() {
     return name().toLowerCase(Locale.ENGLISH);
-  }
-
-  @Override
-  public @Nonnull Scaler getScaler() {
-    return scaler;
   }
 
   @Override
@@ -78,37 +76,43 @@ public enum CapacitorKey implements ICapacitorKey.Computable {
   }
 
   @Override
-  public @Nonnull String getConfigKey() {
-    return configKey;
-  }
-
-  @Override
-  public @Nonnull Section getConfigSection() {
-    return configSection;
-  }
-
-  @Override
-  public @Nonnull String getConfigComment() {
-    return configComment;
-  }
-
-  @Override
-  public int getDefaultBaseValue() {
-    return defaultBaseValue;
-  }
-
-  @Override
-  public int getBaseValue() {
-    return baseValue;
-  }
-
-  @Override
   public void setBaseValue(int baseValue) {
     this.baseValue = baseValue;
   }
 
-  public static void processConfig(Configuration config) {
-    CapacitorKeyHelper.processConfig(config, values());
+  @Override
+  public void validate() {
+    if (scaler == Scaler.Factory.INVALID || baseValue == Integer.MIN_VALUE) {
+      throw new RuntimeException(
+          "CapacitorKey " + getRegistryName() + " has not been configured. This should not be possible and may be caused by a 3rd-party addon mod.");
+    }
+  }
+
+  public final ICapacitorKey setRegistryName(String name) {
+    throw new IllegalStateException("Attempted to set registry name with existing registry name! New: " + name + " Old: " + getRegistryName());
+  }
+
+  @Override
+  public final ICapacitorKey setRegistryName(ResourceLocation name) {
+    throw new IllegalStateException("Attempted to set registry name with existing registry name! New: " + name + " Old: " + getRegistryName());
+  }
+
+  @Override
+  public final @Nonnull ResourceLocation getRegistryName() {
+    return registryName;
+  }
+
+  @Override
+  public final Class<ICapacitorKey> getRegistryType() {
+    return ICapacitorKey.class;
+  };
+
+  @SubscribeEvent
+  public static void register(RegistryEvent.Register<ICapacitorKey> event) {
+    for (CapacitorKey key : values()) {
+      event.getRegistry().register(key);
+      Log.debug("<capacitor key=\"", key.getRegistryName() + "\" base=\"\" scaler=\"\" />");
+    }
   }
 
 }

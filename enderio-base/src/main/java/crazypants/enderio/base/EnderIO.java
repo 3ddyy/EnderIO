@@ -1,5 +1,7 @@
 package crazypants.enderio.base;
 
+import java.util.Map;
+
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
@@ -12,6 +14,7 @@ import com.google.common.collect.ImmutableList;
 
 import crazypants.enderio.api.IMC;
 import crazypants.enderio.api.addon.IEnderIOAddon;
+import crazypants.enderio.base.capacitor.CapacitorKeyRegistry;
 import crazypants.enderio.base.conduit.redstone.ConnectivityTool;
 import crazypants.enderio.base.config.Config;
 import crazypants.enderio.base.config.config.DiagnosticsConfig;
@@ -30,7 +33,6 @@ import crazypants.enderio.base.init.ModObjectRegistry;
 import crazypants.enderio.base.integration.bigreactors.BRProxy;
 import crazypants.enderio.base.integration.buildcraft.BuildcraftIntegration;
 import crazypants.enderio.base.integration.chiselsandbits.CABIMC;
-import crazypants.enderio.base.integration.te.TEUtil;
 import crazypants.enderio.base.loot.LootManager;
 import crazypants.enderio.base.material.recipes.MaterialOredicts;
 import crazypants.enderio.base.network.PacketHandler;
@@ -67,9 +69,27 @@ import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLServerAboutToStartEvent;
 import net.minecraftforge.fml.common.event.FMLServerStoppedEvent;
+import net.minecraftforge.fml.common.network.NetworkCheckHandler;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 @Mod(modid = EnderIO.MODID, name = EnderIO.MOD_NAME, version = EnderIO.VERSION, dependencies = EnderIO.DEPENDENCIES, guiFactory = "crazypants.enderio.base.config.ConfigFactoryEIO")
 public class EnderIO implements IEnderIOAddon {
+
+  @NetworkCheckHandler
+  @SideOnly(Side.CLIENT)
+  public boolean checkModLists(Map<String, String> modList, Side side) {
+    /*
+     * On the client when showing the server list: Require the mod to be there and of the same version.
+     * 
+     * On the client when connecting to a server: Require the mod to be there. Version check is done on the server.
+     * 
+     * On the server when a client connects: Standard Forge version checks with a nice error message apply.
+     * 
+     * On the integrated server when a client connects: Require the mod to be there and of the same version. Ugly error message.
+     */
+    return modList.keySet().contains(MODID) && VERSION.equals(modList.get(MODID));
+  }
 
   public static final @Nonnull String MODID = "enderio";
   public static final @Nonnull String DOMAIN = "enderio";
@@ -149,6 +169,8 @@ public class EnderIO implements IEnderIOAddon {
 
     RecipeLoader.addRecipes();
 
+    CapacitorKeyRegistry.validate();
+
     // END mess
 
     Log.debug("PHASE IMC END");
@@ -172,7 +194,7 @@ public class EnderIO implements IEnderIOAddon {
     PaintSourceValidator.instance.loadConfig();
 
     BuildcraftIntegration.init(event);
-    TEUtil.init(event);
+    // TEUtil.init(event);
 
     proxy.init(event);
 
@@ -276,13 +298,13 @@ public class EnderIO implements IEnderIOAddon {
   @Nonnull
   public NNList<Triple<Integer, RecipeFactory, String>> getRecipeFiles() {
     return new NNList<>(Triple.of(0, null, "aliases"), Triple.of(1, null, "materials"), Triple.of(1, null, "items"), Triple.of(1, null, "base"),
-        Triple.of(1, null, "balls"), Triple.of(9, null, "misc"));
+        Triple.of(1, null, "balls"), Triple.of(9, null, "misc"), Triple.of(9, null, "capacitor"));
   }
 
   @Override
   @Nonnull
   public NNList<String> getExampleFiles() {
-    return new NNList<>("peaceful", "easy_recipes", "hard_recipes", "broken_spawner", "cheap_materials");
+    return new NNList<>("peaceful", "easy_recipes", "hard_recipes", "broken_spawner", "cheap_materials", "legacy_recipes");
   }
 
   static void initCrashData() {

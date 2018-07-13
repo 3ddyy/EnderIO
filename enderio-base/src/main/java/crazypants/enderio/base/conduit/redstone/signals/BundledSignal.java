@@ -1,77 +1,79 @@
 package crazypants.enderio.base.conduit.redstone.signals;
 
+import java.util.Collection;
 import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.Map;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
 import com.enderio.core.common.util.DyeColor;
-import com.enderio.core.common.util.NNList;
-import com.enderio.core.common.util.NNList.Callback;
 
-import crazypants.enderio.base.conduit.redstone.filters.IOutputSignalFilter;
+import crazypants.enderio.base.filter.redstone.IOutputSignalFilter;
 
 public class BundledSignal {
 
-  private final @Nonnull Map<DyeColor, NNList<Signal>> bundle = new EnumMap<>(DyeColor.class);
+  private final @Nonnull Map<DyeColor, Signal> bundle;
+  private final @Nonnull Map<DyeColor, Map<Integer, Signal>> bundleSignals;
 
   public BundledSignal() {
-    NNList.of(DyeColor.class).apply(new Callback<DyeColor>() {
-      @Override
-      public void apply(@Nonnull DyeColor color) {
-        bundle.put(color, new NNList<>());
-      }
-    });
+    bundle = new EnumMap<DyeColor, Signal>(DyeColor.class);
+    bundleSignals = new EnumMap<DyeColor, Map<Integer, Signal>>(DyeColor.class);
+    for (DyeColor color : DyeColor.values()) {
+      bundle.put(color, new Signal(CombinedSignal.NONE, -1));
+      bundleSignals.put(color, new HashMap<Integer, Signal>());
+    }
   }
 
-  public @Nonnull NNList<Signal> get(@Nonnull DyeColor color) {
-    return bundle.get(color).copy();
+  @SuppressWarnings("null")
+  @Nonnull
+  public Signal getSignal(@Nonnull DyeColor color) {
+    Signal result = bundle.get(color);
+    return result;
   }
 
-  public void set(@Nonnull DyeColor color, @Nonnull NNList<Signal> signals) {
-    bundle.put(color, signals.copy());
-  }
+  public void addSignal(@Nonnull DyeColor color, @Nonnull Signal signal) {
+    Map<Integer, Signal> signalMap = bundleSignals.get(color);
+    if (!signalMap.containsKey(signal.getId())) {
+      signalMap.put(signal.getId(), signal);
+    } else if (signalMap.get(signal.getId()).getStrength() != signal.getStrength()) {
+      signalMap.put(signal.getId(), signal);
+    }
 
-  public void clear(@Nonnull DyeColor color) {
-    bundle.get(color).clear();
-  }
-
-  public void add(@Nonnull Signal signal) {
-    bundle.get(signal.getColor()).add(signal);
-  }
-
-  public @Nonnull CombinedSignal get(@Nonnull DyeColor color, @Nonnull IOutputSignalFilter filter, @Nullable ISignalSource ignore) {
-    return filter.apply(color, this, ignore);
-  }
-
-  public @Nonnull CombinedSignal get(@Nonnull DyeColor color, @Nullable ISignalSource ignore) {
-    CombinedSignal result = CombinedSignal.NONE;
-    for (Signal signal : get(color)) {
-      if (ignore == null || !ignore.getSource().equals(signal.getSource()) && !ignore.getDir().equals(signal.getDir())) {
-        if (result.getStrength() < signal.getStrength()) {
-          result = signal;
-        }
+    int str = 0;
+    for (Signal sig : signalMap.values()) {
+      str += sig.getStrength();
+      if (str >= 15) {
+        str = 15;
+        break;
       }
     }
-    return result;
+
+    bundle.get(color).setStrength(str);
   }
 
-  public @Nonnull BundledCombinedSignal get(@Nullable ISignalSource ignore) {
-    BundledCombinedSignal result = new BundledCombinedSignal();
-    NNList.of(DyeColor.class).apply(new Callback<DyeColor>() {
-      @Override
-      public void apply(@Nonnull DyeColor color) {
-        for (Signal signal : get(color)) {
-          if (ignore == null || !ignore.getSource().equals(signal.getSource()) && !ignore.getDir().equals(signal.getDir())) {
-            if (result.get(color).getStrength() < signal.getStrength()) {
-              result.set(signal);
-            }
-          }
-        }
-      }
-    });
-    return result;
+  public void set(@Nonnull DyeColor color, @Nonnull Signal signal) {
+    bundle.put(color, signal);
+  }
+
+  public void reset(@Nonnull DyeColor color) {
+    bundle.remove(color);
+  }
+
+  public void clear() {
+    for (Signal sig : bundle.values()) {
+      sig.resetSignal();
+    }
+  }
+
+  @Nonnull
+  public CombinedSignal getFilteredSignal(@Nonnull DyeColor color, @Nonnull IOutputSignalFilter filter) {
+    return filter.apply(color, this);
+  }
+
+  @Nonnull
+  public Collection<Signal> getSignals() {
+    return bundle.values();
   }
 
 }

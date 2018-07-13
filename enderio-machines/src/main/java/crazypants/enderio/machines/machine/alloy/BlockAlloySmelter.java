@@ -49,6 +49,42 @@ public class BlockAlloySmelter<T extends TileAlloySmelter> extends AbstractPower
     return res;
   }
 
+  public static BlockAlloySmelter<TileAlloySmelter.Furnace> create_furnace(@Nonnull IModObject modObject) {
+    BlockAlloySmelter<TileAlloySmelter.Furnace> res = new BlockAlloySmelter<TileAlloySmelter.Furnace>(modObject) {
+      @Override
+      @SideOnly(Side.CLIENT)
+      public @Nonnull IRenderMapper.IItemRenderMapper getItemRenderMapper() {
+        return RenderMappers.SIMPLE_BODY_MAPPER;
+      }
+
+      @Override
+      @SideOnly(Side.CLIENT)
+      public IRenderMapper.IBlockRenderMapper getBlockRenderMapper() {
+        return RenderMappers.SIMPLE_BODY_MAPPER;
+      }
+    };
+    res.init();
+    return res;
+  }
+
+  public static BlockAlloySmelter<TileAlloySmelter> create_enhanced(@Nonnull IModObject modObject) {
+    BlockAlloySmelter<TileAlloySmelter> res = new BlockAlloySmelter<TileAlloySmelter>(modObject) {
+      @Override
+      @SideOnly(Side.CLIENT)
+      public @Nonnull IRenderMapper.IItemRenderMapper getItemRenderMapper() {
+        return RenderMappers.ENHANCED_BODY_MAPPER;
+      }
+
+      @Override
+      @SideOnly(Side.CLIENT)
+      public IRenderMapper.IBlockRenderMapper getBlockRenderMapper() {
+        return RenderMappers.ENHANCED_BODY_MAPPER;
+      }
+    };
+    res.init();
+    return res;
+  }
+
   public static final TextureSupplier vanillaSmeltingOn = TextureRegistry.registerTexture("blocks/furnace_smelting_on");
   public static final TextureSupplier vanillaSmeltingOff = TextureRegistry.registerTexture("blocks/furnace_smelting_off");
   public static final TextureSupplier vanillaSmeltingOnly = TextureRegistry.registerTexture("blocks/furnace_smelting_only");
@@ -76,5 +112,4 @@ public class BlockAlloySmelter<T extends TileAlloySmelter> extends AbstractPower
       @Nonnull TileAlloySmelter tileEntity) {
     blockStateWrapper.addCacheKey(tileEntity.getFacing()).addCacheKey(tileEntity.isActive());
   }
-
 }

@@ -19,6 +19,10 @@ public class BakedQuadBuilder {
   public static void addBakedQuads(@Nonnull List<BakedQuad> quads, @Nonnull BoundingBox bound, @Nonnull TextureAtlasSprite tex) {
     RenderUtil.addBakedQuads(quads, bound, tex);
   }
+  
+  public static void addBakedQuads(@Nonnull List<BakedQuad> quads, @Nonnull BoundingBox bound, @Nonnull Vector4f uvs, @Nonnull TextureAtlasSprite tex) {
+    RenderUtil.addBakedQuads(quads, bound, uvs, tex);
+  }
 
   public static void addBakedQuads(@Nonnull List<BakedQuad> quads, @Nonnull BoundingBox bound, @Nonnull TextureAtlasSprite tex, Vector4f color) {
     RenderUtil.addBakedQuads(quads, bound, tex, color);
@@ -31,10 +35,20 @@ public class BakedQuadBuilder {
   public static void addBakedQuadForFace(@Nonnull List<BakedQuad> quads, @Nonnull BoundingBox bb, @Nonnull TextureAtlasSprite tex, @Nonnull EnumFacing dir) {
     RenderUtil.addBakedQuadForFace(quads, bb, tex, dir);
   }
+  
+  public static void addBakedQuadForFace(@Nonnull List<BakedQuad> quads, @Nonnull BoundingBox bb, @Nonnull TextureAtlasSprite tex, @Nonnull EnumFacing dir,
+      @Nonnull Vector4f uvs) {
+    RenderUtil.addBakedQuadForFace(quads, bb, tex, dir, uvs);
+  }
 
   public static void addBakedQuadForFace(@Nonnull List<BakedQuad> quads, @Nonnull BoundingBox bb, @Nonnull TextureAtlasSprite tex, @Nonnull EnumFacing face,
       boolean rotateUV, boolean flipU, Vector4f color) {
     RenderUtil.addBakedQuadForFace(quads, bb, tex, face, null, rotateUV, flipU, true, color);
+  }
+  
+  public static void addBakedQuadForFace(@Nonnull List<BakedQuad> quads, @Nonnull BoundingBox bb, @Nonnull TextureAtlasSprite tex, @Nonnull EnumFacing face,
+      @Nonnull Vector4f uvs, boolean rotateUV, boolean flipU, Vector4f color) {
+    RenderUtil.addBakedQuadForFace(quads, bb, tex, face, uvs, null, rotateUV, flipU, true, color);
   }
 
 }

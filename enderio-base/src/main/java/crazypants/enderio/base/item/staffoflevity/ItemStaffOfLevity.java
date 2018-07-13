@@ -15,12 +15,14 @@ import com.enderio.core.common.util.Log;
 import com.enderio.core.common.util.NullHelper;
 
 import crazypants.enderio.api.upgrades.IDarkSteelItem;
+import crazypants.enderio.api.upgrades.IEquipmentData;
 import crazypants.enderio.base.EnderIO;
 import crazypants.enderio.base.EnderIOTab;
 import crazypants.enderio.base.config.Config;
 import crazypants.enderio.base.fluid.Fluids;
 import crazypants.enderio.base.handler.darksteel.DarkSteelRecipeManager;
 import crazypants.enderio.base.init.IModObject;
+import crazypants.enderio.base.item.darksteel.attributes.EquipmentData;
 import crazypants.enderio.base.item.darksteel.upgrade.energy.EnergyUpgrade;
 import crazypants.enderio.base.item.darksteel.upgrade.energy.EnergyUpgradeManager;
 import crazypants.enderio.base.render.itemoverlay.PowerBarOverlayRenderHelper;
@@ -37,6 +39,7 @@ import net.minecraft.util.EnumActionResult;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.NonNullList;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
@@ -105,6 +108,11 @@ public class ItemStaffOfLevity extends Item implements IAdvancedTooltipProvider,
   }
 
   @Override
+  public boolean canDestroyBlockInCreative(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull ItemStack stack, @Nonnull EntityPlayer player) {
+    return false;
+  }
+
+  @Override
   public void renderItemOverlayIntoGUI(@Nonnull ItemStack stack, int xPosition, int yPosition) {
     PowerBarOverlayRenderHelper.instance.render(stack, xPosition, yPosition, true);
     PowerBarOverlayRenderHelper.instance_fluid.render(stack, xPosition, yPosition, 1, true);
@@ -122,8 +130,6 @@ public class ItemStaffOfLevity extends Item implements IAdvancedTooltipProvider,
 
   @Override
   public void addDetailedEntries(@Nonnull ItemStack itemstack, @Nullable EntityPlayer entityplayer, @Nonnull List<String> list, boolean flag) {
-    list.add(EnergyUpgradeManager.getStoredEnergyString(itemstack));
-
     List<String> entries = new ArrayList<String>();
     SpecialTooltipHandler.addDetailedTooltipFromResources(entries, getUnlocalizedName());
     list.addAll(entries);
@@ -284,6 +290,11 @@ public class ItemStaffOfLevity extends Item implements IAdvancedTooltipProvider,
     public ItemStack getContainer() {
       return container;
     }
+  }
+
+  @Override
+  public @Nonnull IEquipmentData getEquipmentData() {
+    return EquipmentData.IRON;
   }
 
 }

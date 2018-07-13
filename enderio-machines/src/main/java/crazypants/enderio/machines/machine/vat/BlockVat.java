@@ -30,10 +30,16 @@ import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-public class BlockVat extends AbstractPoweredTaskBlock<TileVat> implements IPaintable.INonSolidBlockPaintableBlock, IPaintable.IWrenchHideablePaint {
+public class BlockVat<T extends TileVat> extends AbstractPoweredTaskBlock<T> implements IPaintable.INonSolidBlockPaintableBlock, IPaintable.IWrenchHideablePaint {
 
-  public static BlockVat create(@Nonnull IModObject modObject) {
-    BlockVat res = new BlockVat(modObject);
+  public static BlockVat<TileVat> create(@Nonnull IModObject modObject) {
+    BlockVat<TileVat> res = new BlockVat<TileVat>(modObject);
+    res.init();
+    return res;
+  }
+
+  public static BlockVat<TileVat.Enhanced> create_enhanced(@Nonnull IModObject modObject) {
+    BlockVat<TileVat.Enhanced> res = new BlockVat<TileVat.Enhanced>(modObject);
     res.init();
     return res;
   }
@@ -117,5 +123,4 @@ public class BlockVat extends AbstractPoweredTaskBlock<TileVat> implements IPain
       @Nonnull TileVat tileEntity) {
     blockStateWrapper.addCacheKey(tileEntity.getFacing()).addCacheKey(tileEntity.isActive());
   }
-
 }

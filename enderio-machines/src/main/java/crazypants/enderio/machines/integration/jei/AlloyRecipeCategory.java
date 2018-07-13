@@ -34,7 +34,9 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 
 import static crazypants.enderio.machines.init.MachineObject.block_alloy_smelter;
+import static crazypants.enderio.machines.init.MachineObject.block_enhanced_alloy_smelter;
 import static crazypants.enderio.machines.init.MachineObject.block_simple_alloy_smelter;
+import static crazypants.enderio.machines.init.MachineObject.block_simple_furnace;
 import static crazypants.enderio.machines.machine.alloy.ContainerAlloySmelter.FIRST_INVENTORY_SLOT;
 import static crazypants.enderio.machines.machine.alloy.ContainerAlloySmelter.FIRST_RECIPE_SLOT;
 import static crazypants.enderio.machines.machine.alloy.ContainerAlloySmelter.NUM_INVENTORY_SLOT;
@@ -84,8 +86,10 @@ public class AlloyRecipeCategory extends BlankRecipeCategory<AlloyRecipeCategory
 
     registry.addRecipeCategories(new AlloyRecipeCategory(guiHelper));
     registry.addRecipeClickArea(GuiAlloySmelter.class, 155, 42, 16, 16, AlloyRecipeCategory.UID);
+    registry.addRecipeCategoryCraftingItem(new ItemStack(block_simple_furnace.getBlockNN()), VanillaRecipeCategoryUid.SMELTING);
     registry.addRecipeCategoryCraftingItem(new ItemStack(block_alloy_smelter.getBlockNN()), AlloyRecipeCategory.UID, VanillaRecipeCategoryUid.SMELTING);
     registry.addRecipeCategoryCraftingItem(new ItemStack(block_simple_alloy_smelter.getBlockNN()), AlloyRecipeCategory.UID);
+    registry.addRecipeCategoryCraftingItem(new ItemStack(block_enhanced_alloy_smelter.getBlockNN()), AlloyRecipeCategory.UID, VanillaRecipeCategoryUid.SMELTING);
 
     long start = System.nanoTime();
 
@@ -124,7 +128,7 @@ public class AlloyRecipeCategory extends BlankRecipeCategory<AlloyRecipeCategory
     ResourceLocation backgroundLocation = EnderIO.proxy.getGuiTexture("alloy_smelter");
     background = guiHelper.createDrawable(backgroundLocation, xOff, yOff, 82, 78);
 
-    IDrawableStatic flameDrawable = guiHelper.createDrawable(backgroundLocation, 176, 0, 13, 13);
+    IDrawableStatic flameDrawable = guiHelper.createDrawable(backgroundLocation, 176, 0, 14, 14);
     flame = guiHelper.createAnimatedDrawable(flameDrawable, 200, IDrawableAnimated.StartDirection.BOTTOM, false);
   }
 
@@ -145,8 +149,8 @@ public class AlloyRecipeCategory extends BlankRecipeCategory<AlloyRecipeCategory
 
   @Override
   public void drawExtras(@Nonnull Minecraft minecraft) {
-    flame.draw(minecraft, 56 - xOff, 36 - yOff);
-    flame.draw(minecraft, 103 - xOff, 36 - yOff);
+    flame.draw(minecraft, 56 - xOff - 1, 36 - yOff - 1);
+    flame.draw(minecraft, 103 - xOff, 36 - yOff - 1);
   }
 
   @Override

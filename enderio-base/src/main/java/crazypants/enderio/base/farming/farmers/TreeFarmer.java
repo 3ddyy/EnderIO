@@ -11,10 +11,10 @@ import com.enderio.core.common.util.NNList;
 import com.enderio.core.common.util.NNList.Callback;
 import com.enderio.core.common.util.stackable.Things;
 
+import crazypants.enderio.api.farm.AbstractFarmerJoe;
 import crazypants.enderio.api.farm.FarmNotification;
 import crazypants.enderio.api.farm.FarmingAction;
 import crazypants.enderio.api.farm.IFarmer;
-import crazypants.enderio.api.farm.IFarmerJoe;
 import crazypants.enderio.api.farm.IHarvestResult;
 import crazypants.enderio.base.farming.FarmersRegistry;
 import crazypants.enderio.base.farming.FarmingTool;
@@ -35,9 +35,8 @@ import net.minecraft.world.World;
 import net.minecraftforge.common.IPlantable;
 import net.minecraftforge.common.IShearable;
 import net.minecraftforge.event.ForgeEventFactory;
-import net.minecraftforge.registries.IForgeRegistryEntry.Impl;
 
-public class TreeFarmer extends Impl<IFarmerJoe> implements IFarmerJoe {
+public class TreeFarmer extends AbstractFarmerJoe {
 
   private static final @Nonnull HeightComparator comp = new HeightComparator();
 
@@ -71,8 +70,8 @@ public class TreeFarmer extends Impl<IFarmerJoe> implements IFarmerJoe {
   }
 
   @Override
-  public boolean canHarvest(@Nonnull IFarmer farm, @Nonnull BlockPos bc, @Nonnull Block block, @Nonnull IBlockState bs) {
-    return isWood(block);
+  public boolean canHarvest(@Nonnull IFarmer farm, @Nonnull BlockPos bc, @Nonnull IBlockState state) {
+    return isWood(state.getBlock());
   }
 
   public boolean isWood(Block block) {
@@ -85,20 +84,21 @@ public class TreeFarmer extends Impl<IFarmerJoe> implements IFarmerJoe {
   }
 
   @Override
-  public boolean prepareBlock(@Nonnull IFarmer farm, @Nonnull BlockPos bc, @Nonnull Block block, @Nonnull IBlockState meta) {
-    if (saplings.contains(block)) {
+  public boolean prepareBlock(@Nonnull IFarmer farm, @Nonnull BlockPos bc, @Nonnull IBlockState state) {
+    if (saplings.contains(state.getBlock())) {
       return true;
     }
-    return plantFromInventory(farm, bc, block, meta);
+    return plantFromInventory(farm, bc, state);
   }
 
-  protected boolean plantFromInventory(@Nonnull IFarmer farm, @Nonnull BlockPos bc, @Nonnull Block block, @Nonnull IBlockState meta) {
+  protected boolean plantFromInventory(@Nonnull IFarmer farm, @Nonnull BlockPos bc, @Nonnull IBlockState state) {
     World world = farm.getWorld();
     final ItemStack currentSapling = farm.getSeedTypeInSuppliesFor(bc);
     if (canPlant(world, bc, currentSapling)) {
-      ItemStack seed = farm.takeSeedFromSupplies(bc);
-      if (Prep.isValid(seed)) {
-        return plant(farm, world, bc, seed);
+      ItemStack seed = farm.takeSeedFromSupplies(bc, true);
+      if (Prep.isValid(seed) && plant(farm, world, bc, seed)) {
+        farm.takeSeedFromSupplies(bc, false);
+        return true;
       }
     }
     return false;
@@ -125,7 +125,7 @@ public class TreeFarmer extends Impl<IFarmerJoe> implements IFarmerJoe {
   }
 
   protected boolean plant(@Nonnull IFarmer farm, @Nonnull World world, @Nonnull BlockPos bc, @Nonnull ItemStack sapling) {
-    if (canPlant(world, bc, sapling)) {
+    if (canPlant(world, bc, sapling) && farm.checkAction(FarmingAction.PLANT, FarmingTool.HOE)) {
       world.setBlockToAir(bc);
       final Item item = sapling.getItem();
       final IBlockState state = Block.getBlockFromItem(item).getStateFromMeta(item.getMetadata(sapling.getMetadata()));
@@ -153,7 +153,7 @@ public class TreeFarmer extends Impl<IFarmerJoe> implements IFarmerJoe {
   }
 
   @Override
-  public IHarvestResult harvestBlock(@Nonnull IFarmer farm, @Nonnull BlockPos bc, @Nonnull Block block, @Nonnull IBlockState meta) {
+  public IHarvestResult harvestBlock(@Nonnull IFarmer farm, @Nonnull BlockPos bc, @Nonnull IBlockState state) {
     setupHarvesting(farm, bc);
 
     if (!hasAxe) {
@@ -173,8 +173,9 @@ public class TreeFarmer extends Impl<IFarmerJoe> implements IFarmerJoe {
 
     for (int i = 0; i < res.getHarvestedBlocks().size() && hasAxe; i++) {
       final BlockPos coord = res.getHarvestedBlocks().get(i);
-      harvestSingleBlock(farm, world, res, coord);
-      actualHarvests.add(coord);
+      if (harvestSingleBlock(farm, world, res, coord)) {
+        actualHarvests.add(coord);
+      }
     }
 
     res.getHarvestedBlocks().clear();
@@ -185,13 +186,28 @@ public class TreeFarmer extends Impl<IFarmerJoe> implements IFarmerJoe {
     return res;
   }
 
-  void harvestSingleBlock(@Nonnull IFarmer farm, final @Nonnull World world, final @Nonnull HarvestResult result, final @Nonnull BlockPos harvestPos) {
+  /**
+   * Determine the drops for a single block and add them to the harvest result.
+   * 
+   * @param farm
+   *          The {@link IFarmer}
+   * @param world
+   *          The {@link World} the {@link BlockPos} of the {@link HarvestResult} refer to
+   * @param result
+   *          The {@link HarvestResult} to put the drops in
+   * @param harvestPos
+   *          The {@link BlockPos} to get the drops for. It <em>must</em> be part of the {@link HarvestResult}'s harvested blocks list!
+   */
+  boolean harvestSingleBlock(@Nonnull IFarmer farm, final @Nonnull World world, final @Nonnull HarvestResult result, final @Nonnull BlockPos harvestPos) {
     float chance = 1.0F;
     NNList<ItemStack> drops = new NNList<>();
     final IBlockState state = farm.getBlockState(harvestPos);
     final Block blk = state.getBlock();
 
     if (blk instanceof IShearable && hasShears && ((shearCount / result.getHarvestedBlocks().size() + noShearingPercentage) < 100)) {
+      if (!farm.checkAction(FarmingAction.HARVEST, FarmingTool.SHEARS)) {
+        return false;
+      }
       drops.addAll(((IShearable) blk).onSheared(farm.getTool(FarmingTool.SHEARS), world, harvestPos, 0));
       shearCount += 100;
       farm.registerAction(FarmingAction.HARVEST, FarmingTool.SHEARS, state, harvestPos);
@@ -201,6 +217,9 @@ public class TreeFarmer extends Impl<IFarmerJoe> implements IFarmerJoe {
       }
     } else {
       FarmingTool tool = isWood(blk) || !hasHoe ? FarmingTool.AXE : FarmingTool.HOE;
+      if (!farm.checkAction(FarmingAction.HARVEST, tool)) {
+        return false;
+      }
       blk.getDrops(drops, world, harvestPos, state, fortune);
       EntityPlayerMP joe = farm.startUsingItem(tool);
       chance = ForgeEventFactory.fireBlockHarvesting(drops, joe.world, harvestPos, state, fortune, chance, false, joe);
@@ -232,6 +251,7 @@ public class TreeFarmer extends Impl<IFarmerJoe> implements IFarmerJoe {
     }
 
     farm.getWorld().setBlockToAir(harvestPos);
+    return true;
   }
 
   protected void tryReplanting(@Nonnull IFarmer farm, @Nonnull World world, @Nonnull BlockPos bc, @Nonnull HarvestResult res) {

@@ -13,8 +13,8 @@ import com.enderio.core.common.util.NNList;
 import com.enderio.core.common.util.NullHelper;
 import com.enderio.core.common.vecmath.Vector3d;
 
-import crazypants.enderio.api.redstone.IRedstoneConnectable;
 import crazypants.enderio.base.BlockEio;
+import crazypants.enderio.base.EnderIOTab;
 import crazypants.enderio.base.gui.handler.IEioGuiHandler;
 import crazypants.enderio.base.init.IModObject;
 import crazypants.enderio.base.integration.baubles.BaublesUtil;
@@ -68,7 +68,7 @@ import net.minecraftforge.fml.client.registry.ClientRegistry;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-public class BlockCapBank extends BlockEio<TileCapBank> implements IEioGuiHandler.WithPos, IAdvancedTooltipProvider, IRedstoneConnectable,
+public class BlockCapBank extends BlockEio<TileCapBank> implements IEioGuiHandler.WithPos, IAdvancedTooltipProvider,
     ISmartRenderAwareBlock, IHaveTESR, ICustomSubItems, IPaintable.ISolidBlockPaintableBlock {
 
   public static BlockCapBank create(@Nonnull IModObject modObject) {
@@ -82,6 +82,7 @@ public class BlockCapBank extends BlockEio<TileCapBank> implements IEioGuiHandle
 
   protected BlockCapBank(@Nonnull IModObject modObject) {
     super(modObject);
+    setCreativeTab(EnderIOTab.tabEnderIOMachines);
     setHardness(2.0F);
     setLightOpacity(255);
     setDefaultState(getBlockState().getBaseState().withProperty(EnumMergingBlockRenderMode.RENDER, EnumMergingBlockRenderMode.AUTO)
@@ -408,13 +409,6 @@ public class BlockCapBank extends BlockEio<TileCapBank> implements IEioGuiHandle
     return 0;
   }
 
-  /* IRedstoneConnectable */
-
-  @Override
-  public boolean shouldRedstoneConduitConnect(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull EnumFacing from) {
-    return true;
-  }
-
   @Override
   @SideOnly(Side.CLIENT)
   public @Nonnull CapBankItemRenderMapper getItemRenderMapper() {
@@ -460,6 +454,11 @@ public class BlockCapBank extends BlockEio<TileCapBank> implements IEioGuiHandle
   @SideOnly(Side.CLIENT)
   public void bindTileEntitySpecialRenderer() {
     ClientRegistry.bindTileEntitySpecialRenderer(TileCapBank.class, new CapBankRenderer(this));
+  }
+
+  @Override
+  public boolean canConnectRedstone(IBlockState state, IBlockAccess world, BlockPos pos, @Nullable EnumFacing side) {
+    return true;
   }
 
   // ///////////////////////////////////////////////////////////////////////

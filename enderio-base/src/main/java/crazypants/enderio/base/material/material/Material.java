@@ -88,6 +88,26 @@ public enum Material {
   GRINDING_BALL_ENDERIUM("grindingBallEnderium"),
   GRINDING_BALL_LUMIUM("grindingBallLumium"),
 
+  REDSTONE_FILTER_BASE("redstoneFilterBase"),
+
+  POWDER_CONFUSION("confusingDust"),
+  SHARD_ENDER("enderFragment"),
+  POWDER_WITHERING("witheringDust"),
+
+  REMOTE_AWARENESS_UPGRADE("remoteAwarenessUpgrade"),
+
+  DISH("dish", "itemWirelessDish"),
+
+  END_STEEL_MACHINE_CHASSIS("endSteelMachineChassi"),
+  DYE_ENHANCED_MACHINE("enhanced_machine_dye", "dyeEnhancedMachine"),
+  ENHANCED_CHASSIPARTS("enhancedChassiParts"),
+  SIMPLE_CHASSIPARTS("simpleChassiParts"),
+
+  CAKE_BASE("cakeBase"),
+  INFINITY_ROD("infinityRod"),
+
+  BRICK_GLAZED_NETHER("glazedNetherBrick", "ingotBrickNetherGlazed"),
+
   ;
 
   public final boolean hasEffect;

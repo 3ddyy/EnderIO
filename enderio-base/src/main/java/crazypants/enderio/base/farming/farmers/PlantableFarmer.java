@@ -8,10 +8,10 @@ import javax.annotation.Nonnull;
 import com.enderio.core.common.util.NNList;
 import com.enderio.core.common.util.NNList.Callback;
 
+import crazypants.enderio.api.farm.AbstractFarmerJoe;
 import crazypants.enderio.api.farm.FarmNotification;
 import crazypants.enderio.api.farm.FarmingAction;
 import crazypants.enderio.api.farm.IFarmer;
-import crazypants.enderio.api.farm.IFarmerJoe;
 import crazypants.enderio.api.farm.IHarvestResult;
 import crazypants.enderio.base.farming.FarmingTool;
 import crazypants.enderio.util.Prep;
@@ -29,9 +29,8 @@ import net.minecraft.world.World;
 import net.minecraftforge.common.EnumPlantType;
 import net.minecraftforge.common.IPlantable;
 import net.minecraftforge.event.ForgeEventFactory;
-import net.minecraftforge.registries.IForgeRegistryEntry.Impl;
 
-public class PlantableFarmer extends Impl<IFarmerJoe> implements IFarmerJoe {
+public class PlantableFarmer extends AbstractFarmerJoe {
 
   private Set<Block> harvestExcludes = new HashSet<Block>();
 
@@ -48,7 +47,7 @@ public class PlantableFarmer extends Impl<IFarmerJoe> implements IFarmerJoe {
   }
 
   @Override
-  public boolean prepareBlock(@Nonnull IFarmer farm, @Nonnull BlockPos bc, @Nonnull Block block, @Nonnull IBlockState meta) {
+  public boolean prepareBlock(@Nonnull IFarmer farm, @Nonnull BlockPos bc, @Nonnull IBlockState state) {
     ItemStack seedStack = farm.getSeedTypeInSuppliesFor(bc);
     if (Prep.isInvalid(seedStack)) {
       if (!farm.isSlotLocked(bc)) {
@@ -110,16 +109,17 @@ public class PlantableFarmer extends Impl<IFarmerJoe> implements IFarmerJoe {
 
   protected boolean plantFromInventory(@Nonnull IFarmer farm, @Nonnull BlockPos bc, @Nonnull IPlantable plantable) {
     World world = farm.getWorld();
-    if (canPlant(world, bc, plantable) && Prep.isValid(farm.takeSeedFromSupplies(bc))) {
-      return plant(farm, world, bc, plantable);
+    if (canPlant(farm, world, bc, plantable) && Prep.isValid(farm.takeSeedFromSupplies(bc, true)) && plant(farm, world, bc, plantable)) {
+      farm.takeSeedFromSupplies(bc, false);
+      return true;
     }
     return false;
   }
 
   protected boolean plant(@Nonnull IFarmer farm, @Nonnull World world, @Nonnull BlockPos bc, @Nonnull IPlantable plantable) {
     world.setBlockState(bc, Blocks.AIR.getDefaultState(), 1 | 2);
-    IBlockState target = plantable.getPlant(null, new BlockPos(0, 0, 0));
-    if (target == null) {
+    IBlockState target = getPlant(farm, plantable);
+    if (target == null || !farm.checkAction(FarmingAction.PLANT, FarmingTool.HOE)) {
       return false;
     }
     world.setBlockState(bc, target, 1 | 2);
@@ -127,8 +127,8 @@ public class PlantableFarmer extends Impl<IFarmerJoe> implements IFarmerJoe {
     return true;
   }
 
-  protected boolean canPlant(@Nonnull World world, @Nonnull BlockPos bc, @Nonnull IPlantable plantable) {
-    IBlockState target = plantable.getPlant(null, new BlockPos(0, 0, 0));
+  protected boolean canPlant(@Nonnull IFarmer farm, @Nonnull World world, @Nonnull BlockPos bc, @Nonnull IPlantable plantable) {
+    IBlockState target = getPlant(farm, plantable);
     BlockPos groundPos = bc.down();
     IBlockState groundBS = world.getBlockState(groundPos);
     Block ground = groundBS.getBlock();
@@ -139,16 +139,17 @@ public class PlantableFarmer extends Impl<IFarmerJoe> implements IFarmerJoe {
   }
 
   @Override
-  public boolean canHarvest(@Nonnull IFarmer farm, @Nonnull BlockPos bc, @Nonnull Block block, @Nonnull IBlockState meta) {
+  public boolean canHarvest(@Nonnull IFarmer farm, @Nonnull BlockPos bc, @Nonnull IBlockState state) {
+    Block block = state.getBlock();
     if (!harvestExcludes.contains(block) && block instanceof IGrowable && !(block instanceof BlockStem)) {
-      return !((IGrowable) block).canGrow(farm.getWorld(), bc, meta, true);
+      return !((IGrowable) block).canGrow(farm.getWorld(), bc, state, true);
     }
     return false;
   }
 
   @Override
-  public IHarvestResult harvestBlock(@Nonnull IFarmer farm, final @Nonnull BlockPos pos, @Nonnull Block block, @Nonnull IBlockState meta) {
-    if (!canHarvest(farm, pos, block, meta)) {
+  public IHarvestResult harvestBlock(@Nonnull IFarmer farm, final @Nonnull BlockPos pos, @Nonnull IBlockState state) {
+    if (!canHarvest(farm, pos, state) || !farm.checkAction(FarmingAction.HARVEST, FarmingTool.HOE)) {
       return null;
     }
     if (!farm.hasTool(FarmingTool.HOE)) {
@@ -164,12 +165,12 @@ public class PlantableFarmer extends Impl<IFarmerJoe> implements IFarmerJoe {
     ItemStack removedPlantable = Prep.getEmpty();
 
     NNList<ItemStack> drops = new NNList<>();
-    block.getDrops(drops, world, pos, meta, fortune);
-    float chance = ForgeEventFactory.fireBlockHarvesting(drops, world, pos, meta, fortune, 1.0F, false, fakePlayer);
-    farm.registerAction(FarmingAction.HARVEST, FarmingTool.HOE, meta, pos);
+    state.getBlock().getDrops(drops, world, pos, state, fortune);
+    float chance = ForgeEventFactory.fireBlockHarvesting(drops, world, pos, state, fortune, 1.0F, false, fakePlayer);
+    farm.registerAction(FarmingAction.HARVEST, FarmingTool.HOE, state, pos);
     for (ItemStack stack : drops) {
       if (stack != null && Prep.isValid(stack) && world.rand.nextFloat() <= chance) {
-        if (Prep.isInvalid(removedPlantable) && isPlantableForBlock(stack, block)) {
+        if (Prep.isInvalid(removedPlantable) && isPlantableForBlock(farm, stack, state.getBlock())) {
           removedPlantable = stack.copy();
           removedPlantable.setCount(1);
           stack.shrink(1);
@@ -199,13 +200,17 @@ public class PlantableFarmer extends Impl<IFarmerJoe> implements IFarmerJoe {
     return new HarvestResult(result, pos);
   }
 
-  private boolean isPlantableForBlock(@Nonnull ItemStack stack, @Nonnull Block block) {
+  private boolean isPlantableForBlock(@Nonnull IFarmer farm, @Nonnull ItemStack stack, @Nonnull Block block) {
     if (!(stack.getItem() instanceof IPlantable)) {
       return false;
     }
     IPlantable plantable = (IPlantable) stack.getItem();
-    IBlockState b = plantable.getPlant(null, new BlockPos(0, 0, 0));
+    IBlockState b = getPlant(farm, plantable);
     return b != null && b.getBlock() == block;
+  }
+
+  private IBlockState getPlant(@Nonnull IFarmer farm, IPlantable plantable) {
+    return plantable.getPlant(farm.getWorld(), farm.getLocation().up(256));
   }
 
 }

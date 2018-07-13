@@ -2,53 +2,43 @@ package crazypants.enderio.base.conduit.redstone.signals;
 
 import javax.annotation.Nonnull;
 
-import com.enderio.core.common.util.DyeColor;
+public class Signal extends CombinedSignal {
 
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.math.BlockPos;
+  private int id;
 
-public class Signal extends CombinedSignal implements ISignalSource {
-
-  private final @Nonnull BlockPos source;
-  private final @Nonnull EnumFacing dir;
-  private final @Nonnull DyeColor color;
-
-  public Signal(@Nonnull BlockPos source, @Nonnull EnumFacing dir, int strength, @Nonnull DyeColor color) {
+  public Signal(int strength, int id) {
     super(strength);
-    this.source = source.toImmutable();
-    this.dir = dir;
-    this.color = color;
+    this.id = id;
   }
 
-  public Signal(@Nonnull CombinedSignal signal, @Nonnull DyeColor color, @Nonnull ISignalSource source) {
-    this(source.getSource(), source.getDir(), signal.getStrength(), color);
-  }
-
-  @Override
-  @Nonnull
-  public BlockPos getSource() {
-    return source;
-  }
-
-  @Override
-  @Nonnull
-  public EnumFacing getDir() {
-    return dir;
-  }
-
-  @Nonnull
-  public DyeColor getColor() {
-    return color;
+  public Signal(@Nonnull CombinedSignal signal, int id) {
+    this(signal.getStrength(), id);
   }
 
   @Override
   public int hashCode() {
     final int prime = 31;
     int result = super.hashCode();
-    result = prime * result + color.hashCode();
-    result = prime * result + dir.hashCode();
-    result = prime * result + source.hashCode();
+    result = prime * result + getId();
     return result;
+  }
+
+  public int getId() {
+    return id;
+  }
+
+  public void addStrength(int str) {
+    str = getStrength() + str;
+    setStrength(str);
+  }
+
+  public void removeStrength(int str) {
+    str = getStrength() - str;
+    setStrength(str);
+  }
+
+  public void resetSignal() {
+    setStrength(0);
   }
 
   @Override
@@ -59,19 +49,12 @@ public class Signal extends CombinedSignal implements ISignalSource {
       return false;
     if (getClass() != obj.getClass())
       return false;
-    Signal other = (Signal) obj;
-    if (color != other.color)
-      return false;
-    if (dir != other.dir)
-      return false;
-    if (!source.equals(other.source))
-      return false;
     return true;
   }
 
   @Override
   public String toString() {
-    return "Signal [getStrength()=" + getStrength() + ", source=" + source + ", dir=" + dir + ", color=" + color + "]";
+    return "Signal [getStrength()=" + getStrength() + ", getId()=" + getId() + "]";
   }
 
 }

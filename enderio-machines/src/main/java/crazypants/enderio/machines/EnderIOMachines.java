@@ -1,5 +1,7 @@
 package crazypants.enderio.machines;
 
+import java.util.Map;
+
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
@@ -11,6 +13,7 @@ import com.enderio.core.common.util.NNList;
 import crazypants.enderio.api.addon.IEnderIOAddon;
 import crazypants.enderio.base.config.recipes.RecipeFactory;
 import crazypants.enderio.machines.config.ConfigHandler;
+import crazypants.enderio.machines.init.EIOMDataFixer;
 import crazypants.enderio.machines.machine.obelisk.render.ObeliskRenderManager;
 import crazypants.enderio.machines.network.PacketHandler;
 import net.minecraftforge.client.event.ModelRegistryEvent;
@@ -22,12 +25,28 @@ import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.network.NetworkCheckHandler;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 @Mod(modid = EnderIOMachines.MODID, name = EnderIOMachines.MOD_NAME, version = EnderIOMachines.VERSION, dependencies = EnderIOMachines.DEPENDENCIES)
 @EventBusSubscriber(Side.CLIENT)
 public class EnderIOMachines implements IEnderIOAddon {
+
+  @NetworkCheckHandler
+  @SideOnly(Side.CLIENT)
+  public boolean checkModLists(Map<String, String> modList, Side side) {
+    /*
+     * On the client when showing the server list: Require the mod to be there and of the same version.
+     * 
+     * On the client when connecting to a server: Require the mod to be there. Version check is done on the server.
+     * 
+     * On the server when a client connects: Standard Forge version checks with a nice error message apply.
+     * 
+     * On the integrated server when a client connects: Require the mod to be there and of the same version. Ugly error message.
+     */
+    return modList.keySet().contains(MODID) && VERSION.equals(modList.get(MODID));
+  }
 
   public static final @Nonnull String MODID = "enderiomachines";
   public static final @Nonnull String DOMAIN = "enderio";
@@ -46,6 +65,7 @@ public class EnderIOMachines implements IEnderIOAddon {
   @EventHandler
   public static void init(FMLPreInitializationEvent event) {
     ConfigHandler.init(event);
+    EIOMDataFixer.register();
   }
 
   @EventHandler
@@ -70,13 +90,13 @@ public class EnderIOMachines implements IEnderIOAddon {
   public NNList<Triple<Integer, RecipeFactory, String>> getRecipeFiles() {
     return new NNList<>(Triple.of(2, null, "machines"), Triple.of(2, null, "sagmill"), Triple.of(3, null, "sagmill_modded"), Triple.of(3, null, "sagmill_ores"),
         Triple.of(3, null, "sagmill_metals"), Triple.of(3, null, "sagmill_vanilla"), Triple.of(3, null, "sagmill_vanilla2modded"), Triple.of(3, null, "vat"),
-        Triple.of(3, null, "enchanter"), Triple.of(3, null, "spawner"));
+        Triple.of(3, null, "enchanter"), Triple.of(3, null, "spawner"), Triple.of(9, null, "capacitor_machines"));
   }
 
   @Override
   @Nonnull
   public NNList<String> getExampleFiles() {
-    return new NNList<>("machines_easy_recipes", "machines_easy_recipes", "infinity", "cheap_machines");
+    return new NNList<>("machines_easy_recipes", "machines_easy_recipes", "infinity", "cheap_machines", "cheaty_spawner");
   }
 
 }

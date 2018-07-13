@@ -4,6 +4,9 @@ import java.util.Collection;
 import java.util.List;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
+import org.apache.commons.lang3.reflect.ConstructorUtils;
 
 import com.enderio.core.api.client.render.VertexTransform;
 import com.enderio.core.client.render.BoundingBox;
@@ -17,6 +20,7 @@ import crazypants.enderio.base.conduit.IClientConduit;
 import crazypants.enderio.base.conduit.IConduit;
 import crazypants.enderio.base.conduit.IConduitBundle;
 import crazypants.enderio.base.conduit.IConduitRenderer;
+import crazypants.enderio.base.conduit.IClientConduit.WithDefaultRendering;
 import crazypants.enderio.base.conduit.geom.CollidableComponent;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.BufferBuilder;
@@ -28,6 +32,7 @@ import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.EnumFacing.Axis;
 
 import static net.minecraft.util.EnumFacing.DOWN;
 import static net.minecraft.util.EnumFacing.EAST;
@@ -61,7 +66,7 @@ public class DefaultConduitRenderer implements IConduitRenderer {
 
   @Override
   public void addBakedQuads(@Nonnull TileEntitySpecialRenderer<?> conduitBundleRenderer, @Nonnull IConduitBundle bundle,
-      @Nonnull IClientConduit.WithDefaultRendering conduit, float brightness, @Nonnull BlockRenderLayer layer, List<BakedQuad> quads) {
+      @Nonnull IClientConduit.WithDefaultRendering conduit, float brightness, @Nullable BlockRenderLayer layer, List<BakedQuad> quads) {
 
     Collection<CollidableComponent> components = conduit.getCollidableComponents();
     transmissionScaleFactor = conduit.getTransmitionGeometryScale();
@@ -71,7 +76,7 @@ public class DefaultConduitRenderer implements IConduitRenderer {
         final TextureAtlasSprite transmitionTextureForState = conduit.getTransmitionTextureForState(component);
         if (layer != null && isNSEWUD(component.dir) && transmitionTextureForState != null) {
           Vector4f color = conduit.getTransmitionTextureColorForState(component);
-          addTransmissionQuads(transmitionTextureForState, color, conduit, component, selfIllum, quads);
+          addTransmissionQuads(transmitionTextureForState, color, layer, conduit, component, selfIllum, quads);
         }
         TextureAtlasSprite tex = conduit.getTextureForState(component);
         if (tex == null) {
@@ -81,21 +86,39 @@ public class DefaultConduitRenderer implements IConduitRenderer {
       }
     }
   }
+  
+  protected BlockRenderLayer getConduitQuadsLayer() {
+    return BlockRenderLayer.CUTOUT;
+  }
+  
+  protected BlockRenderLayer getTransmissionQuadsLayer() {
+    return BlockRenderLayer.CUTOUT;
+  }
+  
+  @Override
+  public BlockRenderLayer getCoreLayer() {
+    return getConduitQuadsLayer();
+  }
+  
+  @Override
+  public boolean canRenderInLayer(WithDefaultRendering con, BlockRenderLayer layer) {
+    return layer == getConduitQuadsLayer() || layer == getTransmissionQuadsLayer();
+  }
 
   protected void addConduitQuads(@Nonnull IConduitBundle bundle, @Nonnull IConduit conduit, @Nonnull TextureAtlasSprite tex,
       @Nonnull CollidableComponent component, float selfIllum, BlockRenderLayer layer, @Nonnull List<BakedQuad> quads) {
     if (isNSEWUD(component.dir)) {
-      if (layer == null) {
+      if (layer != getConduitQuadsLayer()) {
         return; // TODO? null is the blockbreaking animation
       }
 
-      float scaleFactor = 0.75f;
-      float xLen = Math.abs(component.dir.getFrontOffsetX()) == 1 ? 1 : scaleFactor;
-      float yLen = Math.abs(component.dir.getFrontOffsetY()) == 1 ? 1 : scaleFactor;
-      float zLen = Math.abs(component.dir.getFrontOffsetZ()) == 1 ? 1 : scaleFactor;
+      float shrink = 1 / 32f;
+      float xLen = Math.abs(component.dir.getFrontOffsetX()) == 1 ? 0 : shrink;
+      float yLen = Math.abs(component.dir.getFrontOffsetY()) == 1 ? 0 : shrink;
+      float zLen = Math.abs(component.dir.getFrontOffsetZ()) == 1 ? 0 : shrink;
 
       BoundingBox cube = component.bound;
-      BoundingBox bb = cube.scale(xLen, yLen, zLen);
+      BoundingBox bb = cube.expand(-xLen, -yLen, -zLen);
       addQuadsForSection(bb, tex, component.dir, quads);
       if (conduit.getConnectionMode(component.dir) == ConnectionMode.DISABLED) {
         tex = ConduitBundleRenderManager.instance.getConnectorIcon(component.data);
@@ -113,31 +136,42 @@ public class DefaultConduitRenderer implements IConduitRenderer {
   protected void addQuadsForSection(BoundingBox bb, TextureAtlasSprite tex, EnumFacing dir, List<BakedQuad> quads, Vector4f color) {
 
     boolean rotateSides = dir == UP || dir == DOWN;
-    boolean rotateTopBottom = dir == DOWN || dir == EAST || dir == EnumFacing.SOUTH;
+    boolean rotateTopBottom = dir == DOWN || dir == EAST || dir == SOUTH;
 
-    boolean doRotSides = rotateSides;
     for (EnumFacing face : EnumFacing.VALUES) {
       if (face != dir && face.getOpposite() != dir) {
+        boolean doRotSides = rotateSides;
+        boolean doRotateTopBottom = rotateTopBottom;
         if (face == UP || face == DOWN) {
           doRotSides = dir == SOUTH || dir == NORTH;
-        } else {
-          doRotSides = rotateSides;
         }
-        BakedQuadBuilder.addBakedQuadForFace(quads, bb, tex, face, doRotSides, rotateTopBottom, color);
+        if (dir.getAxis().isVertical() && (face == NORTH || face == EAST)) {
+          doRotateTopBottom = !doRotateTopBottom;
+        }
+        if (dir.getAxis() == Axis.Z && face == DOWN) {
+          doRotateTopBottom = !doRotateTopBottom;
+        }
+        float maxU = 13 / 16f, maxV = 4 / 16f;
+        Vector4f uvs = new Vector4f(0, 0, maxU, maxV);
+        BakedQuadBuilder.addBakedQuadForFace(quads, bb, tex, face, uvs, doRotSides, doRotateTopBottom, color);
       }
     }
   }
 
-  protected void addTransmissionQuads(TextureAtlasSprite tex, Vector4f color, IConduit conduit, CollidableComponent component, float selfIllum,
+  protected void addTransmissionQuads(TextureAtlasSprite tex, Vector4f color, BlockRenderLayer layer, IConduit conduit, CollidableComponent component, float selfIllum,
       List<BakedQuad> quads) {
+    
+    if (layer != getTransmissionQuadsLayer()) {
+      return;
+    }
 
-    float scaleFactor = 0.6f;
-    float xLen = Math.abs(component.dir.getFrontOffsetX()) == 1 ? 1 : scaleFactor;
-    float yLen = Math.abs(component.dir.getFrontOffsetY()) == 1 ? 1 : scaleFactor;
-    float zLen = Math.abs(component.dir.getFrontOffsetZ()) == 1 ? 1 : scaleFactor;
+    float shrink = 1 / 32f;
+    float xLen = Math.abs(component.dir.getFrontOffsetX()) == 1 ? 0 : shrink;
+    float yLen = Math.abs(component.dir.getFrontOffsetY()) == 1 ? 0 : shrink;
+    float zLen = Math.abs(component.dir.getFrontOffsetZ()) == 1 ? 0 : shrink;
 
     BoundingBox cube = component.bound;
-    BoundingBox bb = cube.scale(xLen, yLen, zLen);
+    BoundingBox bb = cube.expand(-xLen, -yLen, -zLen);
     addQuadsForSection(bb, tex, component.dir, quads, color);
   }
 

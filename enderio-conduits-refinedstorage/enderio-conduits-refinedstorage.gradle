@@ -1,0 +1,6 @@
+dependencies {
+  compile "refinedstorage:refinedstorage:${refinedstorage_maven_version}:api"
+
+  compile project(":enderio-base")
+  compile project(":enderio-conduits")
+}

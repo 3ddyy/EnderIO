@@ -50,7 +50,7 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 @Optional.InterfaceList({ @Interface(iface = "buildcraft.api.tools.IToolWrench", modid = "BuildCraftAPI|core"),
-    @Interface(iface = "cofh.api.item.IToolHammer", modid = "cofhapi|item") })
+    @Interface(iface = "cofh.api.item.IToolHammer", modid = "cofhcore") })
 public class ItemYetaWrench extends Item implements ITool, IConduitControl, IAdvancedTooltipProvider, IToolWrench, IToolHammer {
 
   public static ItemYetaWrench create(@Nonnull IModObject modObject) {
@@ -135,6 +135,11 @@ public class ItemYetaWrench extends Item implements ITool, IConduitControl, IAdv
   }
 
   @Override
+  public boolean canDestroyBlockInCreative(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull ItemStack stack, @Nonnull EntityPlayer player) {
+    return false;
+  }
+
+  @Override
   public boolean shouldCauseReequipAnimation(@Nonnull ItemStack oldStack, @Nonnull ItemStack newStack, boolean slotChanged) {
     return !ItemStack.areItemsEqual(oldStack, newStack); // Ignore NBT
   }
@@ -204,20 +209,20 @@ public class ItemYetaWrench extends Item implements ITool, IConduitControl, IAdv
   }
 
   @Override
-  @Optional.Method(modid = "cofhapi|item")
+  @Optional.Method(modid = "cofhcore")
   public boolean isUsable(ItemStack item, EntityLivingBase user, BlockPos pos) {
     return true;
   }
 
   @Override
-  @Optional.Method(modid = "cofhapi|item")
+  @Optional.Method(modid = "cofhcore")
   public boolean isUsable(ItemStack item, EntityLivingBase user, Entity entity) {
     return false;
   }
 
   @SuppressWarnings("null")
   @Override
-  @Optional.Method(modid = "cofhapi|item")
+  @Optional.Method(modid = "cofhcore")
   public void toolUsed(ItemStack item, EntityLivingBase user, BlockPos pos) {
     if (user instanceof EntityPlayer) {
       used(EnumHand.MAIN_HAND, (EntityPlayer) user, pos);
@@ -225,7 +230,7 @@ public class ItemYetaWrench extends Item implements ITool, IConduitControl, IAdv
   }
 
   @Override
-  @Optional.Method(modid = "cofhapi|item")
+  @Optional.Method(modid = "cofhcore")
   public void toolUsed(ItemStack item, EntityLivingBase user, Entity entity) {
   }
 

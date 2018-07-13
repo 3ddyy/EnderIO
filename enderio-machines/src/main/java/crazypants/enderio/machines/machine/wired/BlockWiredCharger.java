@@ -6,9 +6,11 @@ import javax.annotation.Nullable;
 import crazypants.enderio.base.init.IModObject;
 import crazypants.enderio.base.integration.baubles.BaublesUtil;
 import crazypants.enderio.base.machine.baselegacy.AbstractPowerConsumerBlock;
+import crazypants.enderio.base.machine.render.RenderMappers;
 import crazypants.enderio.base.paint.IPaintable;
 import crazypants.enderio.base.render.IBlockStateWrapper;
 import crazypants.enderio.base.render.IHaveTESR;
+import crazypants.enderio.base.render.IRenderMapper;
 import net.minecraft.block.state.BlockFaceShape;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
@@ -22,11 +24,47 @@ import net.minecraftforge.fml.client.registry.ClientRegistry;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-public class BlockWiredCharger extends AbstractPowerConsumerBlock<TileWiredCharger>
+public class BlockWiredCharger<T extends TileWiredCharger> extends AbstractPowerConsumerBlock<T>
     implements IPaintable.ISolidBlockPaintableBlock, IPaintable.IWrenchHideablePaint, IHaveTESR {
 
-  public static BlockWiredCharger create(@Nonnull IModObject modObject) {
-    BlockWiredCharger res = new BlockWiredCharger(modObject);
+  public static BlockWiredCharger<TileWiredCharger> create(@Nonnull IModObject modObject) {
+    BlockWiredCharger<TileWiredCharger> res = new BlockWiredCharger<TileWiredCharger>(modObject);
+    res.init();
+    return res;
+  }
+
+  public static BlockWiredCharger<TileWiredCharger.Enhanced> create_enhanced(@Nonnull IModObject modObject) {
+    BlockWiredCharger<TileWiredCharger.Enhanced> res = new BlockWiredCharger<TileWiredCharger.Enhanced>(modObject){
+      @Override
+      @SideOnly(Side.CLIENT)
+      public @Nonnull IRenderMapper.IItemRenderMapper getItemRenderMapper() {
+        return RenderMappers.ENHANCED_BODY_MAPPER;
+      }
+
+      @Override
+      @SideOnly(Side.CLIENT)
+      public IRenderMapper.IBlockRenderMapper getBlockRenderMapper() {
+        return RenderMappers.ENHANCED_BODY_MAPPER;
+      }
+    };
+    res.init();
+    return res;
+  }
+
+  public static BlockWiredCharger<TileWiredCharger.Simple> create_simple(@Nonnull IModObject modObject) {
+    BlockWiredCharger<TileWiredCharger.Simple> res = new BlockWiredCharger<TileWiredCharger.Simple>(modObject){
+      @Override
+      @SideOnly(Side.CLIENT)
+      public @Nonnull IRenderMapper.IItemRenderMapper getItemRenderMapper() {
+        return RenderMappers.SIMPLE_BODY_MAPPER;
+      }
+
+      @Override
+      @SideOnly(Side.CLIENT)
+      public IRenderMapper.IBlockRenderMapper getBlockRenderMapper() {
+        return RenderMappers.SIMPLE_BODY_MAPPER;
+      }
+    };
     res.init();
     return res;
   }

@@ -129,6 +129,9 @@ public abstract class AbstractPoweredTaskEntity extends AbstractPowerConsumerEnt
     }
     if (redstoneChecksPassed && !currentTask.isComplete()) {
       usePower();
+      if (shouldDoubleTick(currentTask, getPowerUsePerTick())) {
+        usePower();
+      }
     }
     // then check if we are done
     if (currentTask.isComplete()) {
@@ -143,7 +146,7 @@ public abstract class AbstractPoweredTaskEntity extends AbstractPowerConsumerEnt
   protected int usePower(int wantToUse) {
     int used = super.usePower(wantToUse);
     if (currentTask != null) {
-      currentTask.update(used);
+      currentTask.update(used * getEfficiencyMultiplier());
     }
     return used;
   }
@@ -383,5 +386,9 @@ public abstract class AbstractPoweredTaskEntity extends AbstractPowerConsumerEnt
   // task machines need to return a valid constant from MachineRecipeRegistry
   @Override
   public abstract @Nonnull String getMachineName();
+
+  protected boolean shouldDoubleTick(@Nonnull IPoweredTask task, int usedEnergy) {
+    return false;
+  }
 
 }

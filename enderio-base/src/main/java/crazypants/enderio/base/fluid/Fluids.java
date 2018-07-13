@@ -188,7 +188,12 @@ public enum Fluids {
       throw new RuntimeException("The fluid " + fluid + " (" + fluid.getUnlocalizedName()
           + ") is registered in the FluidRegistry, but the FluidRegistry has no delegate for it. This is impossible.", e);
     }
-    return FluidUtil.getFilledBucket(fluidStack);
+    try {
+      return FluidUtil.getFilledBucket(fluidStack);
+    } catch (Exception e) {
+      throw new RuntimeException("The fluid " + fluid + " (" + fluid.getUnlocalizedName()
+          + ") is registered in the FluidRegistry, but crashes when put into a bucket. This is a bug in the mod it belongs to.", e);
+    }
   }
 
   public static @Nonnull NNList<ItemStack> getBuckets() {
@@ -240,6 +245,7 @@ public enum Fluids {
     FluidFuelRegister.instance.addFuel(HOOTCH.getFluid(), Config.hootchPowerPerCycleRF, Config.hootchPowerTotalBurnTime);
     FluidFuelRegister.instance.addFuel(ROCKET_FUEL.getFluid(), Config.rocketFuelPowerPerCycleRF, Config.rocketFuelPowerTotalBurnTime);
     FluidFuelRegister.instance.addFuel(FIRE_WATER.getFluid(), Config.fireWaterPowerPerCycleRF, Config.fireWaterPowerTotalBurnTime);
+    FluidFuelRegister.instance.addCoolant(VAPOR_OF_LEVITY.getFluid(), 0.0314f);
 
     RailcraftUtil.registerFuels();
   }

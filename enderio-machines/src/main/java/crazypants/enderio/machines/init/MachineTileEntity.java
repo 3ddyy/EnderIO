@@ -37,8 +37,8 @@ import crazypants.enderio.machines.machine.teleport.anchor.TileTravelAnchor;
 import crazypants.enderio.machines.machine.teleport.telepad.TileDialingDevice;
 import crazypants.enderio.machines.machine.teleport.telepad.TileTelePad;
 import crazypants.enderio.machines.machine.transceiver.TileTransceiver;
-import crazypants.enderio.machines.machine.vacuum.TileVacuumChest;
-import crazypants.enderio.machines.machine.vacuum.TileXPVacuum;
+import crazypants.enderio.machines.machine.vacuum.chest.TileVacuumChest;
+import crazypants.enderio.machines.machine.vacuum.xp.TileXPVacuum;
 import crazypants.enderio.machines.machine.vat.TileVat;
 import crazypants.enderio.machines.machine.wired.TileWiredCharger;
 import crazypants.enderio.machines.machine.wireless.TileWirelessCharger;
@@ -58,6 +58,8 @@ public enum MachineTileEntity implements IModTileEntity {
   TileBufferOmni(TileBuffer.TileBufferOmni.class),
   TileBufferCreative(TileBuffer.TileBufferCreative.class),
   TileZombieGenerator(TileZombieGenerator.class),
+  TileFrankenZombieGenerator(TileZombieGenerator.TileFrankenZombieGenerator.class),
+  TileEnderGenerator(TileZombieGenerator.TileEnderGenerator.class),
   TileExperienceObelisk(TileExperienceObelisk.class),
   TileWeatherObelisk(TileWeatherObelisk.class),
   TileAttractor(TileAttractor.class),
@@ -66,6 +68,7 @@ public enum MachineTileEntity implements IModTileEntity {
   TileElectricLight(TileElectricLight.class),
   TileLightNode(TileLightNode.class),
   TileReservoir(TileReservoir.class),
+  TileOmniReservoir(TileReservoir.TileOmniReservoir.class),
   TileInhibitorObelisk(TileInhibitorObelisk.class),
   TileRelocatorObelisk(TileRelocatorObelisk.class),
   TileKillerJoe(TileKillerJoe.class),
@@ -73,10 +76,15 @@ public enum MachineTileEntity implements IModTileEntity {
   TileTravelAnchor(TileTravelAnchor.class),
   TileEnchanter(TileEnchanter.class),
   TileWiredCharger(TileWiredCharger.class),
+  TileWiredChargerEnhanced(TileWiredCharger.Enhanced.class),
+  TileWiredChargerSimple(TileWiredCharger.Simple.class),
   TileAlloySmelter(TileAlloySmelter.class),
   TileAlloySmelterSimple(TileAlloySmelter.Simple.class),
+  TileAlloySmelterFurnace(TileAlloySmelter.Furnace.class),
+  TileAlloySmelterEnhanced(TileAlloySmelter.Enhanced.class),
   TileSagMill(TileSagMill.Normal.class),
   TileSagMillSimple(TileSagMill.Simple.class),
+  TileSagMillEnhanced(TileSagMill.Enhanced.class),
   TileEntityPainter(TileEntityPainter.class),
   TileFarmStation(TileFarmStation.class),
   TilePoweredSpawner(TilePoweredSpawner.class),
@@ -84,6 +92,7 @@ public enum MachineTileEntity implements IModTileEntity {
   TileSoulBinder(TileSoulBinder.class),
   TileTransceiver(TileTransceiver.class),
   TileVat(TileVat.class),
+  TileVatEnhanced(TileVat.Enhanced.class),
   TileSolarPanel(TileSolarPanel.class),
   TileVacuumChest(TileVacuumChest.class),
   TileWirelessCharger(TileWirelessCharger.class),

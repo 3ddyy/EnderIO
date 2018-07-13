@@ -16,6 +16,7 @@ import crazypants.enderio.base.render.registry.TextureRegistry.TextureSupplier;
 import crazypants.enderio.base.sound.SoundHelper;
 import crazypants.enderio.base.sound.SoundRegistry;
 import crazypants.enderio.machines.config.config.ClientConfig;
+import crazypants.enderio.machines.init.MachineObject;
 import crazypants.enderio.machines.machine.killera.KillerJoeRenderMapper;
 import net.minecraft.block.material.MapColor;
 import net.minecraft.block.material.Material;
@@ -35,18 +36,70 @@ import net.minecraftforge.fml.client.registry.ClientRegistry;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-public class BlockZombieGenerator extends AbstractGeneratorBlock<TileZombieGenerator> implements IHaveTESR {
+public class BlockZombieGenerator<T extends TileZombieGenerator> extends AbstractGeneratorBlock<T> implements IHaveTESR {
 
-  public static final TextureSupplier textureHead1 = TextureRegistry.registerTexture("blocks/zombie_gen_head");
-  public static final TextureSupplier textureHead2 = TextureRegistry.registerTexture("blocks/zombie_gen_head2");
+  public static final @Nonnull TextureSupplier textureHead1 = TextureRegistry.registerTexture("blocks/zombie_gen_head");
+  public static final @Nonnull TextureSupplier textureHead2 = TextureRegistry.registerTexture("blocks/zombie_gen_head2");
+  public static final @Nonnull TextureSupplier textureHeadEnder1 = TextureRegistry.registerTexture("blocks/ender_gen_head");
+  public static final @Nonnull TextureSupplier textureHeadEnder2 = TextureRegistry.registerTexture("blocks/ender_gen_head2");
 
   private static final double px = 1d / 16d;
   public static final @Nonnull AxisAlignedBB AABB = new AxisAlignedBB(2 * px, 0 * px, 2 * px, 14 * px, 16 * px, 14 * px);
 
-  public static BlockZombieGenerator create(@Nonnull IModObject modObject) {
-    BlockZombieGenerator gen = new BlockZombieGenerator(modObject);
+  public static BlockZombieGenerator<TileZombieGenerator> create(@Nonnull IModObject modObject) {
+    BlockZombieGenerator<TileZombieGenerator> gen = new BlockZombieGenerator<>(modObject);
     gen.init();
     return gen;
+  }
+
+  public static BlockFrankNZombieGenerator create_franken(@Nonnull IModObject modObject) {
+    BlockFrankNZombieGenerator gen = new BlockFrankNZombieGenerator(modObject);
+    gen.init();
+    return gen;
+  }
+
+  public static BlockEnderGenerator create_ender(@Nonnull IModObject modObject) {
+    BlockEnderGenerator gen = new BlockEnderGenerator(modObject);
+    gen.init();
+    return gen;
+  }
+
+  private static class BlockFrankNZombieGenerator extends BlockZombieGenerator<TileZombieGenerator.TileFrankenZombieGenerator> {
+
+    public BlockFrankNZombieGenerator(@Nonnull IModObject modObject) {
+      super(modObject);
+    }
+
+    @Override
+    @SideOnly(Side.CLIENT)
+    public void bindTileEntitySpecialRenderer() {
+      ClientRegistry.bindTileEntitySpecialRenderer(TileZombieGenerator.TileFrankenZombieGenerator.class, new ZombieGeneratorRenderer(MachineObject.block_franken_zombie_generator.getBlockNN()));
+    }
+  }
+
+  private static class BlockEnderGenerator extends BlockZombieGenerator<TileZombieGenerator.TileEnderGenerator> {
+
+    public BlockEnderGenerator(@Nonnull IModObject modObject) {
+      super(modObject);
+    }
+
+    @Override
+    @SideOnly(Side.CLIENT)
+    public void bindTileEntitySpecialRenderer() {
+      ClientRegistry.bindTileEntitySpecialRenderer(TileZombieGenerator.TileEnderGenerator.class, new ZombieGeneratorRenderer(MachineObject.block_ender_generator.getBlockNN()));
+    }
+
+    @Override
+    @SideOnly(Side.CLIENT)
+    public @Nonnull IItemRenderMapper getItemRenderMapper() {
+      return KillerJoeRenderMapper.enderGen;
+    }
+
+    @Override
+    @SideOnly(Side.CLIENT)
+    public IBlockRenderMapper getBlockRenderMapper() {
+      return KillerJoeRenderMapper.enderGen;
+    }
   }
 
   protected BlockZombieGenerator(@Nonnull IModObject modObject) {
@@ -145,6 +198,8 @@ public class BlockZombieGenerator extends AbstractGeneratorBlock<TileZombieGener
   @Override
   @SideOnly(Side.CLIENT)
   public void bindTileEntitySpecialRenderer() {
-    ClientRegistry.bindTileEntitySpecialRenderer(TileZombieGenerator.class, new ZombieGeneratorRenderer());
+    ClientRegistry.bindTileEntitySpecialRenderer(TileZombieGenerator.class, new ZombieGeneratorRenderer(MachineObject.block_zombie_generator.getBlockNN()));
   }
+
+
 }

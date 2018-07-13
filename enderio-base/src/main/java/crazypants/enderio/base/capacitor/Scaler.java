@@ -66,6 +66,12 @@ public interface Scaler {
    *
    */
   public enum Factory implements Scaler {
+    INVALID(new Scaler() { // 0-0-0-...
+      @Override
+      public float scaleValue(float idx) {
+        return 0;
+      }
+    }),
     IDENTITY(new Scaler() { // 1-2-3-...
       @Override
       public float scaleValue(float idx) {
@@ -98,11 +104,11 @@ public interface Scaler {
     }),
     OCTADIC_1_8(new IndexedScaler(.5f, 0, .5f, 1, 3, 2, 4, 8, 10, 16)),
     POWER(new IndexedScaler(1f, 0, 1, 3, 5, 8, 13)),
-    CHARGE(new IndexedScaler(1f, 0, 100, 60, 20, 10, 1)),
+    CHARGE(new IndexedScaler(1f, 1000, 100, 60, 20, 10, 1)),
     SPEED(new IndexedScaler(1f, 100, 20, 10, 2, 1)),
     POWER10(new IndexedScaler(1f, 0, 1, 2, 10, 20)),
     RANGE(new IndexedScaler(1f, 0, 4, 6, 10, 17)),
-    FIXED_1(new Scaler() { // 1-1-1
+    FIXED(new Scaler() { // 1-1-1
       @Override
       public float scaleValue(float idx) {
         return 1;
@@ -117,6 +123,12 @@ public interface Scaler {
       }
     }),
     DROPOFF(new IndexedScaler(1f, 1, 2, 2.5f, 3.5f, 4.75f)), // Add half the previous value
+    CENT(new Scaler() { // 0.01-0.01-0.01 (used for power loss)
+      @Override
+      public float scaleValue(float idx) {
+        return 0.01f;
+      }
+    }),
 
     ;
 

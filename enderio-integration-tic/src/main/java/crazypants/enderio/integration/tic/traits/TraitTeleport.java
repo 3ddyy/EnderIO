@@ -10,7 +10,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.event.world.BlockEvent.HarvestDropsEvent;
-import slimeknights.tconstruct.library.TinkerRegistry;
 import slimeknights.tconstruct.library.modifiers.IToolMod;
 import slimeknights.tconstruct.library.modifiers.ModifierNBT;
 import slimeknights.tconstruct.library.traits.AbstractTraitLeveled;
@@ -36,7 +35,7 @@ public class TraitTeleport extends AbstractTraitLeveled {
     if (wasHit) {
       ModifierNBT data = new ModifierNBT(TinkerUtil.getModifierTag(tool, name));
       if (random.nextFloat() < (data.level * .21f)) {
-        RandomTeleportUtil.teleportEntity(target.world, target, true);
+        RandomTeleportUtil.teleportEntity(target.world, target, true, false, 24);
       }
     }
   }
@@ -64,8 +63,12 @@ public class TraitTeleport extends AbstractTraitLeveled {
 
   @Override
   public boolean canApplyTogether(IToolMod otherModifier) {
-    return !(otherModifier instanceof TraitTeleport) && !(otherModifier instanceof TraitPickup)
-        && otherModifier != TinkerRegistry.getModifier("exnihilo_smashing");
+    return !(otherModifier instanceof TraitTeleport);
+  }
+
+  @Override
+  public int getPriority() {
+    return 12;
   }
 
 }

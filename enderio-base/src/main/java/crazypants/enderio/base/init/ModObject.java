@@ -5,9 +5,13 @@ import javax.annotation.Nullable;
 
 import com.enderio.core.common.util.NullHelper;
 
+import crazypants.enderio.base.block.charge.BlockConcussionCharge;
+import crazypants.enderio.base.block.charge.BlockConfusionCharge;
+import crazypants.enderio.base.block.charge.BlockEnderCharge;
 import crazypants.enderio.base.block.coldfire.BlockColdFire;
 import crazypants.enderio.base.block.darksteel.anvil.BlockDarkSteelAnvil;
 import crazypants.enderio.base.block.darksteel.bars.BlockDarkIronBars;
+import crazypants.enderio.base.block.darksteel.bars.BlockEndIronBars;
 import crazypants.enderio.base.block.darksteel.door.BlockDarkSteelDoor;
 import crazypants.enderio.base.block.darksteel.ladder.BlockDarkSteelLadder;
 import crazypants.enderio.base.block.darksteel.obsidian.BlockReinforcedObsidian;
@@ -30,6 +34,7 @@ import crazypants.enderio.base.block.painted.BlockPaintedStairs;
 import crazypants.enderio.base.block.painted.BlockPaintedStone;
 import crazypants.enderio.base.block.painted.BlockPaintedTrapDoor;
 import crazypants.enderio.base.block.painted.BlockPaintedWall;
+import crazypants.enderio.base.block.painted.BlockPaintedWorkbench;
 import crazypants.enderio.base.block.rail.BlockExitRail;
 import crazypants.enderio.base.block.skull.BlockEndermanSkull;
 import crazypants.enderio.base.capacitor.ItemCapacitor;
@@ -39,6 +44,12 @@ import crazypants.enderio.base.filter.item.items.ItemBasicItemFilter;
 import crazypants.enderio.base.filter.item.items.ItemExistingItemFilter;
 import crazypants.enderio.base.filter.item.items.ItemModItemFilter;
 import crazypants.enderio.base.filter.item.items.ItemPowerItemFilter;
+import crazypants.enderio.base.filter.redstone.items.ItemBasicOutputSignalFilter;
+import crazypants.enderio.base.filter.redstone.items.ItemComparatorInputSignalFilter;
+import crazypants.enderio.base.filter.redstone.items.ItemCountingOutputSignalFilter;
+import crazypants.enderio.base.filter.redstone.items.ItemInvertingOutputSignalFilter;
+import crazypants.enderio.base.filter.redstone.items.ItemTimerInputSignalFilter;
+import crazypants.enderio.base.filter.redstone.items.ItemToggleOutputSignalFilter;
 import crazypants.enderio.base.item.coldfire.ItemColdFireIgniter;
 import crazypants.enderio.base.item.conduitprobe.ItemConduitProbe;
 import crazypants.enderio.base.item.coordselector.ItemCoordSelector;
@@ -49,6 +60,7 @@ import crazypants.enderio.base.item.darksteel.ItemDarkSteelBow;
 import crazypants.enderio.base.item.darksteel.ItemDarkSteelPickaxe;
 import crazypants.enderio.base.item.darksteel.ItemDarkSteelShears;
 import crazypants.enderio.base.item.darksteel.ItemDarkSteelSword;
+import crazypants.enderio.base.item.eggs.ItemOwlEgg;
 import crazypants.enderio.base.item.enderface.ItemEnderface;
 import crazypants.enderio.base.item.magnet.ItemMagnet;
 import crazypants.enderio.base.item.rodofreturn.ItemRodOfReturn;
@@ -69,7 +81,7 @@ import crazypants.enderio.base.render.dummy.BlockMachineIO;
 import net.minecraft.block.Block;
 import net.minecraft.item.Item;
 
-public enum ModObject implements IModObject.Registerable {
+public enum ModObject implements IModObject {
 
   // Dummies
   block_machine_io(BlockMachineIO.class),
@@ -107,6 +119,12 @@ public enum ModObject implements IModObject.Registerable {
   blockDecoration2(BlockDecorationFacing.class),
   blockDecoration3(BlockDecorationFacing.class, "create2"),
   blockIndustrialInsulation(BlockIndustrialInsulation.class),
+  blockEndIronBars(BlockEndIronBars.class),
+
+  // Charges
+  blockConfusionCharge(BlockConfusionCharge.class),
+  blockConcussionCharge(BlockConcussionCharge.class),
+  blockEnderCharge(BlockEnderCharge.class),
 
   // Painter
   blockPaintedFence(BlockPaintedFence.class, ModTileEntity.TileEntityPaintedBlock),
@@ -132,6 +150,7 @@ public enum ModObject implements IModObject.Registerable {
   blockPaintedWoodenDoor(BlockPaintedDoor.class, "create_wooden", ModTileEntity.TileEntityPaintedBlock),
   blockPaintedIronDoor(BlockPaintedDoor.class, "create_iron", ModTileEntity.TileEntityPaintedBlock),
   blockPaintedDarkSteelDoor(BlockPaintedDoor.class, "create_dark", ModTileEntity.TileEntityPaintedBlock),
+  blockPaintedWorkbench(BlockPaintedWorkbench.class, ModTileEntity.TileEntityPaintedBlock),
 
   blockExitRail(BlockExitRail.class),
 
@@ -160,6 +179,19 @@ public enum ModObject implements IModObject.Registerable {
 
   itemFluidFilter(ItemFluidFilter.class),
 
+  itemRedstoneNotFilter(ItemInvertingOutputSignalFilter.class),
+  itemRedstoneOrFilter(ItemBasicOutputSignalFilter.class, "createOr"),
+  itemRedstoneAndFilter(ItemBasicOutputSignalFilter.class, "createAnd"),
+  itemRedstoneNorFilter(ItemBasicOutputSignalFilter.class, "createNor"),
+  itemRedstoneNandFilter(ItemBasicOutputSignalFilter.class, "createNand"),
+  itemRedstoneXorFilter(ItemBasicOutputSignalFilter.class, "createXor"),
+  itemRedstoneXnorFilter(ItemBasicOutputSignalFilter.class, "createXnor"),
+  itemRedstoneToggleFilter(ItemToggleOutputSignalFilter.class),
+  itemRedstoneCountingFilter(ItemCountingOutputSignalFilter.class),
+
+  itemRedstoneSensorFilter(ItemComparatorInputSignalFilter.class),
+  itemRedstoneTimerFilter(ItemTimerInputSignalFilter.class),
+
   blockFusedQuartz(BlockFusedQuartz.class, "createFusedQuartz"),
   blockFusedGlass(BlockFusedQuartz.class, "createFusedGlass"),
   blockEnlightenedFusedQuartz(BlockFusedQuartz.class, "createEnlightenedFusedQuartz"),
@@ -177,12 +209,24 @@ public enum ModObject implements IModObject.Registerable {
   itemDarkSteelChestplate(ItemDarkSteelArmor.class, "createDarkSteelChestplate"),
   itemDarkSteelLeggings(ItemDarkSteelArmor.class, "createDarkSteelLeggings"),
   itemDarkSteelBoots(ItemDarkSteelArmor.class, "createDarkSteelBoots"),
-  itemDarkSteelSword(ItemDarkSteelSword.class),
-  itemDarkSteelPickaxe(ItemDarkSteelPickaxe.class),
-  itemDarkSteelAxe(ItemDarkSteelAxe.class),
-  itemDarkSteelBow(ItemDarkSteelBow.class),
+  itemDarkSteelSword(ItemDarkSteelSword.class, "createDarkSteel"),
+  itemDarkSteelPickaxe(ItemDarkSteelPickaxe.class, "createDarkSteel"),
+  itemDarkSteelAxe(ItemDarkSteelAxe.class, "createDarkSteel"),
+  itemDarkSteelBow(ItemDarkSteelBow.class, "createDarkSteel"),
   itemDarkSteelShears(ItemDarkSteelShears.class),
+  itemEndSteelSword(ItemDarkSteelSword.class, "createEndSteel"),
+  itemEndSteelPickaxe(ItemDarkSteelPickaxe.class, "createEndSteel"),
+  itemEndSteelAxe(ItemDarkSteelAxe.class, "createEndSteel"),
+  itemEndSteelBow(ItemDarkSteelBow.class, "createEndSteel"),
+
+  itemEndSteelHelmet(ItemDarkSteelArmor.class, "createEndSteelHelmet"),
+  itemEndSteelChestplate(ItemDarkSteelArmor.class, "createEndSteelChestplate"),
+  itemEndSteelLeggings(ItemDarkSteelArmor.class, "createEndSteelLeggings"),
+  itemEndSteelBoots(ItemDarkSteelArmor.class, "createEndSteelBoots"),
+
   itemStaffOfLevity(ItemStaffOfLevity.class),
+
+  item_owl_egg(ItemOwlEgg.class),
 
   ;
 

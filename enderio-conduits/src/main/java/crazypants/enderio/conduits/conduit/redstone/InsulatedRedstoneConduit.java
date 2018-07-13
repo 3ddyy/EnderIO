@@ -2,23 +2,21 @@ package crazypants.enderio.conduits.conduit.redstone;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.Map.Entry;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import com.enderio.core.api.client.gui.ITabPanel;
 import com.enderio.core.common.util.DyeColor;
+import com.enderio.core.common.util.NNList;
+import com.enderio.core.common.util.NNList.NNIterator;
 import com.enderio.core.common.vecmath.Vector4f;
-import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Multimap;
 
 import crazypants.enderio.base.conduit.ConduitUtil;
 import crazypants.enderio.base.conduit.ConnectionMode;
@@ -30,10 +28,20 @@ import crazypants.enderio.base.conduit.RaytraceResult;
 import crazypants.enderio.base.conduit.geom.CollidableCache.CacheKey;
 import crazypants.enderio.base.conduit.geom.CollidableComponent;
 import crazypants.enderio.base.conduit.redstone.ConnectivityTool;
+import crazypants.enderio.base.conduit.redstone.signals.BundledSignal;
+import crazypants.enderio.base.conduit.redstone.signals.CombinedSignal;
 import crazypants.enderio.base.conduit.redstone.signals.Signal;
-import crazypants.enderio.base.conduit.redstone.signals.SignalSource;
 import crazypants.enderio.base.conduit.registry.ConduitRegistry;
 import crazypants.enderio.base.diagnostics.Prof;
+import crazypants.enderio.base.filter.FilterRegistry;
+import crazypants.enderio.base.filter.capability.CapabilityFilterHolder;
+import crazypants.enderio.base.filter.capability.IFilterHolder;
+import crazypants.enderio.base.filter.gui.FilterGuiUtil;
+import crazypants.enderio.base.filter.redstone.DefaultInputSignalFilter;
+import crazypants.enderio.base.filter.redstone.DefaultOutputSignalFilter;
+import crazypants.enderio.base.filter.redstone.IInputSignalFilter;
+import crazypants.enderio.base.filter.redstone.IOutputSignalFilter;
+import crazypants.enderio.base.filter.redstone.IRedstoneSignalFilter;
 import crazypants.enderio.base.render.registry.TextureRegistry;
 import crazypants.enderio.base.render.registry.TextureRegistry.TextureSupplier;
 import crazypants.enderio.base.tool.ToolUtil;
@@ -56,14 +64,13 @@ import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.Optional;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 import static crazypants.enderio.conduits.init.ConduitObject.item_redstone_conduit;
 
-public class InsulatedRedstoneConduit extends AbstractConduit implements IRedstoneConduit, IConduitComponent {
+public class InsulatedRedstoneConduit extends AbstractConduit implements IRedstoneConduit, IConduitComponent, IFilterHolder<IRedstoneSignalFilter> {
 
   static final Map<String, TextureSupplier> ICONS = new HashMap<>();
 
@@ -85,6 +92,11 @@ public class InsulatedRedstoneConduit extends AbstractConduit implements IRedsto
   // --------------------------------- Class Start
   // -------------------------------------------
 
+  private final EnumMap<EnumFacing, IRedstoneSignalFilter> outputFilters = new EnumMap<EnumFacing, IRedstoneSignalFilter>(EnumFacing.class);
+  private final EnumMap<EnumFacing, IRedstoneSignalFilter> inputFilters = new EnumMap<EnumFacing, IRedstoneSignalFilter>(EnumFacing.class);
+  private final EnumMap<EnumFacing, ItemStack> outputFilterUpgrades = new EnumMap<EnumFacing, ItemStack>(EnumFacing.class);
+  private final EnumMap<EnumFacing, ItemStack> inputFilterUpgrades = new EnumMap<EnumFacing, ItemStack>(EnumFacing.class);
+
   private Map<EnumFacing, ConnectionMode> forcedConnections = new EnumMap<EnumFacing, ConnectionMode>(EnumFacing.class);
 
   private Map<EnumFacing, DyeColor> inputSignalColors = new EnumMap<EnumFacing, DyeColor>(EnumFacing.class);
@@ -92,8 +104,6 @@ public class InsulatedRedstoneConduit extends AbstractConduit implements IRedsto
   private Map<EnumFacing, DyeColor> outputSignalColors = new EnumMap<EnumFacing, DyeColor>(EnumFacing.class);
 
   private Map<EnumFacing, Boolean> signalStrengths = new EnumMap<EnumFacing, Boolean>(EnumFacing.class);
-
-  private final List<Set<Signal>> externalSignals = new ArrayList<Set<Signal>>();
 
   private RedstoneConduitNetwork network;
 
@@ -103,15 +113,23 @@ public class InsulatedRedstoneConduit extends AbstractConduit implements IRedsto
 
   private boolean connectionsDirty = false;
 
+  private int signalIdBase = 0;
+
   @SuppressWarnings("unused")
   public InsulatedRedstoneConduit() {
-    for (EnumFacing ignored : EnumFacing.VALUES) {
-      externalSignals.add(new HashSet<Signal>());
+    super();
+    for (NNIterator<EnumFacing> itr = NNList.FACING.fastIterator(); itr.hasNext();) {
+      EnumFacing dir = itr.next();
+      outputFilters.put(dir, new DefaultOutputSignalFilter());
+      inputFilters.put(dir, new DefaultInputSignalFilter());
+      outputFilterUpgrades.put(dir, ItemStack.EMPTY);
+      inputFilterUpgrades.put(dir, ItemStack.EMPTY);
     }
+
   }
 
   @Override
-  public @Nullable IConduitNetwork<IRedstoneConduit, IRedstoneConduit> getNetwork() {
+  public @Nullable RedstoneConduitNetwork getNetwork() {
     return network;
   }
 
@@ -184,7 +202,7 @@ public class InsulatedRedstoneConduit extends AbstractConduit implements IRedsto
   public void onChunkUnload() {
     RedstoneConduitNetwork networkR = (RedstoneConduitNetwork) getNetwork();
     if (networkR != null) {
-      Multimap<SignalSource, Signal> oldSignals = ArrayListMultimap.create(networkR.getSignals());
+      BundledSignal oldSignals = networkR.getBundledSignal();
       List<IRedstoneConduit> conduits = Lists.newArrayList(networkR.getConduits());
       super.onChunkUnload();
       networkR.afterChunkUnload(conduits, oldSignals);
@@ -219,7 +237,7 @@ public class InsulatedRedstoneConduit extends AbstractConduit implements IRedsto
               setConnectionMode(faceHit, ConnectionMode.NOT_SET);
               return ConduitUtil.connectConduits(this, faceHit);
             }
-            forceConnectionMode(faceHit, ConnectionMode.IN_OUT);
+            forceConnectionMode(faceHit, ConnectionMode.INPUT);
             return true;
 
           } else if (externalConnections.contains(connDir)) {
@@ -306,7 +324,7 @@ public class InsulatedRedstoneConduit extends AbstractConduit implements IRedsto
   public DyeColor getOutputSignalColor(@Nonnull EnumFacing dir) {
     DyeColor res = outputSignalColors.get(dir);
     if (res == null) {
-      return DyeColor.RED;
+      return DyeColor.GREEN;
     }
     return res;
   }
@@ -374,12 +392,8 @@ public class InsulatedRedstoneConduit extends AbstractConduit implements IRedsto
       return 0;
     }
     int result = 0;
-    for (Signal signal : getNetworkOutputs(toDirection)) {
-      // don't return signals back to where they came from
-      if (!signal.getSource().equals(getPos().offset(toDirection))) {
-        result = Math.max(result, signal.getStrength());
-      }
-    }
+    CombinedSignal signal = getNetworkOutput(toDirection);
+    result = Math.max(result, signal.getStrength());
     return result;
   }
 
@@ -399,68 +413,37 @@ public class InsulatedRedstoneConduit extends AbstractConduit implements IRedsto
 
   @Override
   @Nonnull
-  public Collection<Signal> getNetworkOutputs(@Nonnull EnumFacing side) {
+  public CombinedSignal getNetworkOutput(@Nonnull EnumFacing side) {
     ConnectionMode mode = getConnectionMode(side);
     if (network == null || !mode.acceptsInput()) {
-      return Collections.emptySet();
+      return CombinedSignal.NONE;
     }
-    Collection<Signal> allSigs = network.getSignals().values();
-    if (allSigs.isEmpty()) {
-      return allSigs;
-    }
-
     DyeColor col = getOutputSignalColor(side);
-    Set<Signal> result = new HashSet<Signal>();
-    for (Signal signal : allSigs) {
-      if (signal.getColor() == col) {
-        result.add(signal);
-      }
-    }
-
-    return result;
+    BundledSignal bundledSignal = network.getBundledSignal();
+    return bundledSignal.getFilteredSignal(col, (IOutputSignalFilter) getSignalFilter(side, true));
   }
 
   @Override
   @Nonnull
-  public Set<Signal> getNetworkInputs(@Nonnull EnumFacing side) {
+  public Signal getNetworkInput(@Nonnull EnumFacing side) {
     if (network != null) {
       network.setNetworkEnabled(false);
     }
 
-    HashSet<Signal> signals = new HashSet<Signal>();
+    CombinedSignal result = CombinedSignal.NONE;
     if (acceptSignalsForDir(side)) {
       int input = getExternalPowerLevel(side);
-      if (input > 0) {
-        BlockPos pos = getBundle().getLocation().offset(side);
-        Signal signal = new Signal(pos, side, input, getInputSignalColor(side));
-        signals.add(signal);
-      }
+      result = new CombinedSignal(input);
+      IInputSignalFilter filter = (IInputSignalFilter) getSignalFilter(side, false);
 
-      if (Loader.isModLoaded("computercraft")) {
-        BlockPos loc = getBundle().getLocation().offset(side);
-        int bundledInput = getComputerCraftBundledPowerLevel(side);
-        if (bundledInput >= 0) {
-          for (int i = 0; i < 16; i++) {
-            int color = bundledInput >>> i & 1;
-            Signal signal = new Signal(loc, side, color == 1 ? 16 : 0, DyeColor.fromIndex(Math.max(0, 15 - i)));
-            signals.add(signal);
-          }
-        }
-      }
+      result = filter.apply(result, getBundle().getBundleworld(), getBundle().getLocation().offset(side));
     }
 
     if (network != null) {
       network.setNetworkEnabled(true);
     }
 
-    Map<DyeColor, Signal> res = new HashMap<DyeColor, Signal>();
-    for (Signal signal : signals) {
-      if (signal != null && (!res.containsKey(signal.getColor()) || signal.getStrength() > res.get(signal.getColor()).getStrength())) {
-        res.put(signal.getColor(), signal);
-      }
-    }
-
-    return new HashSet<Signal>(res.values());
+    return new Signal(result, signalIdBase + side.ordinal());
   }
 
   protected int getExternalPowerLevel(@Nonnull EnumFacing dir) {
@@ -487,7 +470,25 @@ public class InsulatedRedstoneConduit extends AbstractConduit implements IRedsto
   }
 
   @Optional.Method(modid = "computercraft")
-  protected int getComputerCraftBundledPowerLevel(EnumFacing dir) {
+  @Override
+  @Nonnull
+  public Map<DyeColor, Signal> getComputerCraftSignals(@Nonnull EnumFacing side) {
+    Map<DyeColor, Signal> ccSignals = new EnumMap<DyeColor, Signal>(DyeColor.class);
+
+    int bundledInput = getComputerCraftBundledPowerLevel(side);
+    if (bundledInput >= 0) {
+      for (int i = 0; i < 16; i++) {
+        int color = bundledInput >>> i & 1;
+        Signal signal = new Signal(color == 1 ? 16 : 0, signalIdBase + side.ordinal());
+        ccSignals.put(DyeColor.fromIndex(Math.max(0, 15 - i)), signal);
+      }
+    }
+
+    return ccSignals;
+  }
+
+  @Optional.Method(modid = "computercraft")
+  private int getComputerCraftBundledPowerLevel(EnumFacing dir) {
     World world = getBundle().getBundleworld();
     BlockPos pos = getBundle().getLocation().offset(dir);
 
@@ -504,6 +505,25 @@ public class InsulatedRedstoneConduit extends AbstractConduit implements IRedsto
     ConnectionMode res = forcedConnections.get(dir);
     if (res == null) {
       return getDefaultConnectionMode();
+    }
+    return res;
+  }
+
+  @Override
+  @Nonnull
+  public ConnectionMode getDefaultConnectionMode() {
+    return ConnectionMode.OUTPUT;
+  }
+
+  @Override
+  @Nonnull
+  public NNList<ItemStack> getDrops() {
+    NNList<ItemStack> res = super.getDrops();
+    for (ItemStack stack : inputFilterUpgrades.values()) {
+      res.add(stack);
+    }
+    for (ItemStack stack : outputFilterUpgrades.values()) {
+      res.add(stack);
     }
     return res;
   }
@@ -616,14 +636,16 @@ public class InsulatedRedstoneConduit extends AbstractConduit implements IRedsto
 
   @Override
   protected void readTypeSettings(@Nonnull EnumFacing dir, @Nonnull NBTTagCompound dataRoot) {
-    setInputSignalColor(dir, DyeColor.values()[dataRoot.getShort("signalColor")]);
+    forceConnectionMode(dir, ConnectionMode.values()[dataRoot.getShort("connectionMode")]);
+    setInputSignalColor(dir, DyeColor.values()[dataRoot.getShort("inputSignalColor")]);
     setOutputSignalColor(dir, DyeColor.values()[dataRoot.getShort("outputSignalColor")]);
     setOutputStrength(dir, dataRoot.getBoolean("signalStrong"));
   }
 
   @Override
   protected void writeTypeSettingsToNbt(@Nonnull EnumFacing dir, @Nonnull NBTTagCompound dataRoot) {
-    dataRoot.setShort("signalColor", (short) getInputSignalColor(dir).ordinal());
+    dataRoot.setShort("connectionMode", (short) forcedConnections.get(dir).ordinal());
+    dataRoot.setShort("inputSignalColor", (short) getInputSignalColor(dir).ordinal());
     dataRoot.setShort("outputSignalColor", (short) getOutputSignalColor(dir).ordinal());
     dataRoot.setBoolean("signalStrong", isOutputStrong(dir));
   }
@@ -692,6 +714,46 @@ public class InsulatedRedstoneConduit extends AbstractConduit implements IRedsto
       nbtRoot.setByteArray("signalStrengths", modes);
     }
 
+    for (Entry<EnumFacing, IRedstoneSignalFilter> entry : inputFilters.entrySet()) {
+      if (entry.getValue() != null) {
+        IRedstoneSignalFilter f = entry.getValue();
+        NBTTagCompound itemRoot = new NBTTagCompound();
+        FilterRegistry.writeFilterToNbt(f, itemRoot);
+        nbtRoot.setTag("inSignalFilts." + entry.getKey().name(), itemRoot);
+      }
+    }
+    for (Entry<EnumFacing, IRedstoneSignalFilter> entry : outputFilters.entrySet()) {
+      if (entry.getValue() != null) {
+        IRedstoneSignalFilter f = entry.getValue();
+        NBTTagCompound itemRoot = new NBTTagCompound();
+        FilterRegistry.writeFilterToNbt(f, itemRoot);
+        nbtRoot.setTag("outSignalFilts." + entry.getKey().name(), itemRoot);
+      }
+    }
+    for (Entry<EnumFacing, ItemStack> entry : inputFilterUpgrades.entrySet()) {
+      if (entry.getValue() != null) {
+        ItemStack up = entry.getValue();
+        IRedstoneSignalFilter filter = getSignalFilter(entry.getKey(), true);
+        FilterRegistry.writeFilterToStack(filter, up);
+
+        NBTTagCompound itemRoot = new NBTTagCompound();
+        up.writeToNBT(itemRoot);
+        nbtRoot.setTag("inputSignalFilterUpgrades." + entry.getKey().name(), itemRoot);
+      }
+    }
+
+    for (Entry<EnumFacing, ItemStack> entry : outputFilterUpgrades.entrySet()) {
+      if (entry.getValue() != null) {
+        ItemStack up = entry.getValue();
+        IRedstoneSignalFilter filter = getSignalFilter(entry.getKey(), false);
+        FilterRegistry.writeFilterToStack(filter, up);
+
+        NBTTagCompound itemRoot = new NBTTagCompound();
+        up.writeToNBT(itemRoot);
+        nbtRoot.setTag("outputSignalFilterUpgrades." + entry.getKey().name(), itemRoot);
+      }
+    }
+
   }
 
   @Override
@@ -746,6 +808,36 @@ public class InsulatedRedstoneConduit extends AbstractConduit implements IRedsto
       }
     }
 
+    for (EnumFacing dir : EnumFacing.VALUES) {
+      String key = "inSignalFilts." + dir.name();
+      if (nbtRoot.hasKey(key)) {
+        NBTTagCompound filterTag = (NBTTagCompound) nbtRoot.getTag(key);
+        IRedstoneSignalFilter filter = (IRedstoneSignalFilter) FilterRegistry.loadFilterFromNbt(filterTag);
+        inputFilters.put(dir, filter);
+      }
+
+      key = "inputSignalFilterUpgrades." + dir.name();
+      if (nbtRoot.hasKey(key)) {
+        NBTTagCompound upTag = (NBTTagCompound) nbtRoot.getTag(key);
+        ItemStack ups = new ItemStack(upTag);
+        inputFilterUpgrades.put(dir, ups);
+      }
+
+      key = "outputSignalFilterUpgrades." + dir.name();
+      if (nbtRoot.hasKey(key)) {
+        NBTTagCompound upTag = (NBTTagCompound) nbtRoot.getTag(key);
+        ItemStack ups = new ItemStack(upTag);
+        outputFilterUpgrades.put(dir, ups);
+      }
+
+      key = "outSignalFilts." + dir.name();
+      if (nbtRoot.hasKey(key)) {
+        NBTTagCompound filterTag = (NBTTagCompound) nbtRoot.getTag(key);
+        IRedstoneSignalFilter filter = (IRedstoneSignalFilter) FilterRegistry.loadFilterFromNbt(filterTag);
+        outputFilters.put(dir, filter);
+      }
+    }
+
   }
 
   @Override
@@ -795,12 +887,18 @@ public class InsulatedRedstoneConduit extends AbstractConduit implements IRedsto
 
   @Override
   public boolean hasCapability(@Nonnull Capability<?> capability, @Nullable EnumFacing facing) {
+    if (capability == CapabilityFilterHolder.FILTER_HOLDER_CAPABILITY) {
+      return true;
+    }
     return false;
   }
 
   @Nullable
   @Override
   public <T> T getCapability(@Nonnull Capability<T> capability, @Nullable EnumFacing facing) {
+    if (capability == CapabilityFilterHolder.FILTER_HOLDER_CAPABILITY) {
+      return (T) this;
+    }
     return null;
   }
 
@@ -808,5 +906,75 @@ public class InsulatedRedstoneConduit extends AbstractConduit implements IRedsto
   @Nonnull
   public String getConduitProbeInfo(@Nonnull EntityPlayer player) {
     return "";
+  }
+
+  // -------------------------------------------
+  // FILTERS
+  // -------------------------------------------
+
+  @Override
+  public void setSignalIdBase(int id) {
+    signalIdBase = id;
+  }
+
+  @Override
+  @Nonnull
+  public IRedstoneSignalFilter getSignalFilter(@Nonnull EnumFacing dir, boolean isOutput) {
+    if (!isOutput) {
+      return inputFilters.get(dir);
+    } else {
+      return outputFilters.get(dir);
+    }
+  }
+
+  public void setSignalFilter(@Nonnull EnumFacing dir, boolean isInput, @Nonnull IRedstoneSignalFilter filter) {
+    if (!isInput) {
+      inputFilters.put(dir, filter != null ? filter : new DefaultInputSignalFilter());
+    } else {
+      outputFilters.put(dir, filter != null ? filter : new DefaultOutputSignalFilter());
+    }
+    setClientStateDirty();
+    connectionsDirty = true;
+  }
+
+  @Override
+  public IRedstoneSignalFilter getFilter(int filterIndex, int param1) {
+    return getSignalFilter(EnumFacing.getFront(param1), filterIndex == getInputFilterIndex() ? true : !(filterIndex == getOutputFilterIndex()));
+  }
+
+  @Override
+  public void setFilter(int filterIndex, int param1, @Nonnull IRedstoneSignalFilter filter) {
+    setSignalFilter(EnumFacing.getFront(param1), filterIndex == getInputFilterIndex() ? true : !(filterIndex == getOutputFilterIndex()), filter);
+  }
+
+  @Override
+  @Nonnull
+  public ItemStack getFilterStack(int filterIndex, int param1) {
+    if (filterIndex == getInputFilterIndex()) {
+      return inputFilterUpgrades.get(EnumFacing.getFront(param1));
+    } else if (filterIndex == getOutputFilterIndex()) {
+      return outputFilterUpgrades.get(EnumFacing.getFront(param1));
+    }
+    return ItemStack.EMPTY;
+  }
+
+  @Override
+  public void setFilterStack(int filterIndex, int param1, @Nonnull ItemStack stack) {
+    if (filterIndex == getInputFilterIndex()) {
+      inputFilterUpgrades.put(EnumFacing.getFront(param1), stack);
+    } else if (filterIndex == getOutputFilterIndex()) {
+      outputFilterUpgrades.put(EnumFacing.getFront(param1), stack);
+    }
+    setFilter(filterIndex, param1, FilterRegistry.<IRedstoneSignalFilter> getFilterForUpgrade(stack));
+  }
+
+  @Override
+  public int getInputFilterIndex() {
+    return FilterGuiUtil.INDEX_INPUT_REDSTONE;
+  }
+
+  @Override
+  public int getOutputFilterIndex() {
+    return FilterGuiUtil.INDEX_OUTPUT_REDSTONE;
   }
 }

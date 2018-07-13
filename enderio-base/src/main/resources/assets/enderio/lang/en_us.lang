@@ -12,6 +12,8 @@ itemGroup.enderio.items=EnderIO Items
 itemGroup.enderio.materials=EnderIO Materials
 itemGroup.enderio.main=EnderIO Blocks
 itemGroup.enderio.mobs=EnderIO Souls
+itemGroup.enderio.conduits=EnderIO Conduits
+itemGroup.enderio.invpanel=EnderIO Inventory Panel
 
 item.item_alloy_ingot_conductive_iron.name=Conductive Iron Ingot
 item.item_alloy_ingot_dark_steel.name=Dark Steel Ingot
@@ -108,8 +110,9 @@ item.item_dark_steel_shears.tooltip.effPowered=%sEfficiency when powered: %s
 item.item_dark_steel_shears.tooltip.multiHarvest=Shears multiple blocks/sheep when empowered
 
 item.item_dark_steel_bow.name=Dark Bow
+item.item_end_steel_bow.name=Ender Bow
 
-item.item_dark_steel_armor.tooltip.line1=%sDiamond level protection when powered
+item.item_dark_steel_armor.tooltip.line1=%sBetter protection when powered
 item.item_dark_steel_armor.tooltip.levelcost.line1=%s%s:
 item.item_dark_steel_armor.tooltip.levelcost.line2=%s%s  %s + %s levels
 
@@ -121,6 +124,19 @@ item.item_dark_steel_chestplate.name=Dark Plate
 item.item_dark_steel_helmet.name=Dark Helm
 
 item.item_dark_steel_leggings.name=Dark Leggings
+
+item.item_end_steel_boots.name=Ender Boots
+item.item_end_steel_boots.tooltip.line1=Fall damage negated when powered
+
+item.item_end_steel_chestplate.name=Ender Plate
+
+item.item_end_steel_helmet.name=Ender Helm
+
+item.item_end_steel_leggings.name=Ender Leggings
+
+item.item_end_steel_sword.name=The Ender Mk2
+item.item_end_steel_pickaxe.name=Ender Pickaxe
+item.item_end_steel_axe.name=Ender Axe
 
 item.item_ender_food.enderios.name="Enderios"
 item.item_ender_food.enderios.tooltip.common.line1=Part of a balanced breakfast!
@@ -217,12 +233,27 @@ item.item_material.soul_machine_dye.name=Soul Attuned Powder Coating
 item.item_material.soul_machine_dye.tooltip.detailed.line1=Industrially produced dye with organic and inorganic components. Not biodegradable. May contain traces of ectoplasm.
 item.item_material.soul_machine_dye.tooltip.detailed.line2=§7Not edible. Avoid contact with eyes. In case of contact with eyes, rinse immediately with holy water and seek religous advice.
 item.item_material.enhanced_machine_chassi.name=Enhanced Machine Chassis
-item.item_material.enhanced_machine_chassi.tooltip.detailed.line1=A reinforced structure for constructing sturdier machinery
+item.item_material.enhanced_machine_chassi.tooltip.detailed.line1=A reinforced chassis for constructing sturdier machinery
 item.item_material.unsouled_machine_chassi.name=Soulless Machine Chassis
 item.item_material.unsouled_machine_chassi.tooltip.detailed.line1=An advanced frame for machinery, but it seems to be missing something...
 item.item_material.grinding_ball_signalum.name=Signalum Grinding Ball
 item.item_material.grinding_ball_enderium.name=Enderium Grinding Ball
 item.item_material.grinding_ball_lumium.name=Lumium Grinding Ball
+item.item_material.redstone_filter_base.name=Redstone Filter Base
+item.item_material.confusing_dust.name=Confusing Powder
+item.item_material.ender_fragment.name=Ender Fragment
+item.item_material.withering_dust.name=Withering Dust
+item.item_material.remote_awareness_upgrade.name=Remote Awareness Upgrade
+item.item_material.dish.name=Wireless Energy Transmitter Dish Assembly
+item.item_material.end_steel_machine_chassi.name=End Steel Chassis
+item.item_material.enhanced_machine_dye.name=Enhanced Machine Coating
+item.item_material.enhanced_machine_dye.tooltip.detailed.line1=Industrially produced dye with magical and inorganic components.
+item.item_material.enhanced_machine_dye.tooltip.detailed.line2=§7Warning: May contain traces of diamond. Please chew carefully before swallowing. Not gluten free. 
+item.item_material.simple_chassi_parts.name=Simple Machine Parts
+item.item_material.enhanced_chassi_parts.name=Enhanced Machine Parts
+item.item_material.cake_base.name=Cake Base
+item.item_material.infinity_rod.name=Infinity Rod
+item.item_material.glazed_nether_brick.name=Nethercotta
 
 item.item_rod_of_return.name=Rod of Return
 item.item_rod_of_return.tooltip.detailed.line1=Returns the user to a Telepad
@@ -297,6 +328,8 @@ tile.block_dark_fused_glass.name=Dark Clear Glass
 tile.block_dark_fused_quartz.name=Dark Fused Quartz
 
 tile.block_dark_iron_bars.name=Dark Iron Bars
+
+tile.block_end_iron_bars.name=End Steel Bars
 
 tile.block_dark_steel_anvil.name=Dark Steel Anvil
 tile.block_dark_steel_anvil.tooltip.common.line1=Damage Resistant
@@ -457,6 +490,7 @@ tile.block_painted_stone_slab.name=Painted Stone Slab
 tile.block_painted_stone_stair.name=Painted Stone Stairs
 tile.block_painted_wall.name=Painted Wall
 tile.block_painted_wooden_trapdoor.name=Painted Wooden Trapdoor
+tile.block_painted_workbench.name=Painted Crafting Table
 
 tile.block_painted_wooden_door.name=Painted Wooden Door
 tile.block_painted_iron_door.name=Painted Iron Door
@@ -485,9 +519,10 @@ enderio.block.tooltip.lightBlocker=Blocks Light
 
 
 enderio.grindingball.tooltip.line1=%sSAG Mill Grinding Ball
-enderio.grindingball.tooltip.line2=%sMain Output %s
-enderio.grindingball.tooltip.line3=%sBonus Output %s
-enderio.grindingball.tooltip.line4=%sPower Use %s
+enderio.grindingball.tooltip.line2=%sMain Output %s%%
+enderio.grindingball.tooltip.line3=%sBonus Output %s%%
+enderio.grindingball.tooltip.line4=%sPower Use %s%%
+enderio.grindingball.gui.durability=Remaining: %s %%
 
 enderio.gui.permission.denied=Permission denied
 
@@ -555,8 +590,39 @@ enderio.config.recipe.painter=Painter Recipes
 enderio.config.diagnostics=Diagnostic Settings
 enderio.config.diagnostics.tooltip=Use with care!
 
-enchantment.soulbound=Soulbound
-description.enchantment.enderio.soulbound=Prevents item from being lost on death
+enderio.config.blocks=Blocks
+enderio.config.blocks.charges=Charges
+enderio.config.blocks.charges.confusion=Confusion Charge
+enderio.config.blocks.charges.concussion=Concussion Charge
+enderio.config.blocks.charges.ender=Ender Charge
+
+
+enchantment.enderio.soulbound=Soulbound
+description.enchantment.enderio.soulbound=Prevents item from being lost on death|Note: Most gravestone mods are stupid and prevent this from working!
+enchantment.enderio.witherarrow=Withering
+description.enchantment.enderio.witherarrow=Applies withering to the target|Applies to bows
+enchantment.enderio.witherweapon=Decay
+description.enchantment.enderio.witherweapon=Applies withering to the target|Applies to melee weapons
+enchantment.enderio.repellent=Repellent
+description.enchantment.enderio.repellent=Chance to teleport attackers away|Higher levels teleport more often and farther
+enchantment.enderio.shimmer=Shimmer
+description.enchantment.enderio.shimmer=Makes the item shimmer as if it was enchanted.|That's all.|Really.|Nothing more.|Yes, it is useless.|I know.
+
+potion.effect.enderio.withering=Potion of Decay
+splash_potion.effect.enderio.withering=Splash Potion of Decay
+lingering_potion.effect.enderio.withering=Lingering Potion of Decay
+tipped_arrow.effect.enderio.withering=Arrow of Decay
+
+potion.effect.enderio.confusion=Potion of Confusion
+splash_potion.effect.enderio.confusion=Splash Potion of Confusion
+lingering_potion.effect.enderio.confusion=Lingering Potion of Confusion
+tipped_arrow.effect.enderio.confusion=Arrow of Confusion
+
+potion.effect.enderio.floating=Potion of Rising
+splash_potion.effect.enderio.floating=Splash Potion of Rising
+lingering_potion.effect.enderio.floating=Lingering Potion of Rising
+tipped_arrow.effect.enderio.floating=Arrow of Rising
+
 
 enderio.farm.note.outputFull=Output Full
 enderio.farm.note.noSeeds=No Seeds
@@ -604,11 +670,18 @@ enderio.darksteel.upgrade.empowered_four.name=Empowered IV
 enderio.darksteel.upgrade.empowered_four.tooltip.detailed.line1=Power: $P
 enderio.darksteel.upgrade.empowered_four.tooltip.detailed.line2=$D% damage absorbed by power
 
+enderio.darksteel.upgrade.empowered_five.name=Empowered V
+enderio.darksteel.upgrade.empowered_five.tooltip.detailed.line1=Power: $P
+enderio.darksteel.upgrade.empowered_five.tooltip.detailed.line2=$D% damage absorbed by power
+
 enderio.darksteel.upgrade.travel.name=Travel
 enderio.darksteel.upgrade.travel.tooltip.detailed.line1=Hold shift and R-Click to teleport or activate a travel anchor or Ender IO
 
 enderio.darksteel.upgrade.spoon.name=Spoon
 enderio.darksteel.upgrade.spoon.tooltip.detailed.line1=Who needs a shovel when you have a spoon...
+
+enderio.darksteel.upgrade.hoe.name=Fork
+enderio.darksteel.upgrade.hoe.tooltip.detailed.line1=Who needs a hoe when you have a fork...
 
 enderio.darksteel.upgrade.tnt.name=Explosive
 enderio.darksteel.upgrade.tnt.tooltip.detailed.line1=Adds explosive power to the pickaxe, damaging surrounding blocks while mining.
@@ -634,6 +707,13 @@ enderio.darksteel.upgrade.gogglesOfRevealing.name=Revealing
 enderio.darksteel.upgrade.gogglesOfRevealing.tooltip.detailed.line1=Vis Discount: 5%
 enderio.darksteel.upgrade.gogglesOfRevealing.enabled=Magic is being revealed
 enderio.darksteel.upgrade.gogglesOfRevealing.disabled=Magic is hidden from plain sight
+
+enderio.darksteel.upgrade.thaumaturge_robes.chest.name=Thaumaturge's Robe
+enderio.darksteel.upgrade.thaumaturge_robes.chest.tooltip.detailed.line1=Vis Discount: 3%
+enderio.darksteel.upgrade.thaumaturge_robes.legs.name=Thaumaturge's Leggings
+enderio.darksteel.upgrade.thaumaturge_robes.legs.tooltip.detailed.line1=Vis Discount: 3%
+enderio.darksteel.upgrade.thaumaturge_robes.feet.name=Thaumaturge's Boots
+enderio.darksteel.upgrade.thaumaturge_robes.feet.tooltip.detailed.line1=Vis Discount: 2%
 
 enderio.darksteel.upgrade.jump.enabled=Jump Enabled
 enderio.darksteel.upgrade.jump.disabled=Jump Disabled
@@ -779,6 +859,7 @@ enderio.item_item_filter_upgrade.clear_config_method=%sPlace in crafting grid to
 enderio.item_item_filter_upgrade.clear_config_warning=%sThis will clear all stored filter settings!
 
 enderio.gui.generic.max=Max: %s
+enderio.gui.generic.loss=Leakage: %s
 enderio.gui.generic.progress=Progress %s%%
 enderio.gui.generic.ioMode.overlay.tooltip=Configure IO
 enderio.gui.generic.ioMode.overlay.tooltip.visible.line1=Configure IO
@@ -1009,13 +1090,30 @@ enderio.gui.existing_item_filter=Existing Item Filter
 enderio.gui.mod_item_filter=Mod Item Filter
 enderio.gui.power_item_filter=Power Item Filter
 enderio.gui.species_item_filter=Species Item Filter
+
 enderio.gui.fluid_filter=Fluid Filter
+
+enderio.gui.redstone_filter.and=Redstone AND Filter
+enderio.gui.redstone_filter.or=Redstone OR Filter
+enderio.gui.redstone_filter.nor=Redstone NOR Filter
+enderio.gui.redstone_filter.nand=Redstone NAND Filter
+enderio.gui.redstone_filter.xor=Redstone XOR Filter
+enderio.gui.redstone_filter.xnor=Redstone XNOR Filter
+enderio.gui.redstone_filter.counting=Redstone Counting Filter
+enderio.gui.redstone_filter.timer=Redstone Timer Filter
 
 enderio.gui.mod.item_filter.delete=Delete
 enderio.gui.mod.item_filter.slot=Input Slot
 
 enderio.gui.power.item_filter.compare=Comparison Mode
 enderio.gui.power.item_filter.percent=Power Percentage
+
+enderio.gui.redstone_filter.signal_color=Redstone Signal Color
+enderio.gui.redstone_filter.input_signal=Input Signal
+enderio.gui.redstone_filter.count=Count
+enderio.gui.redstone_filter.time=Time
+
+enderio.gui.infinity_recipe_dimensions=Overworld Only
 
 item.item_basic_item_filter.name=Basic Item Filter
 item.item_advanced_item_filter.name=Advanced Item Filter
@@ -1027,3 +1125,28 @@ item.item_mod_item_filter.name=Mod Item Filter
 item.item_power_item_filter.name=Power Item Filter
 
 item.item_fluid_filter.name=Fluid Filter
+
+item.item_redstone_not_filter.name=Redstone NOT Filter
+item.item_redstone_or_filter.name=Redstone OR Filter
+item.item_redstone_and_filter.name=Redstone AND Filter
+item.item_redstone_nor_filter.name=Redstone NOR Filter
+item.item_redstone_nand_filter.name=Redstone NAND Filter
+item.item_redstone_xor_filter.name=Redstone XOR Filter
+item.item_redstone_xnor_filter.name=Redstone XNOR Filter
+item.item_redstone_toggle_filter.name=Redstone Toggle Latch Filter
+item.item_redstone_sensor_filter.name=Redstone Sensor Filter
+item.item_redstone_counting_filter.name=Redstone Counting Filter
+item.item_redstone_timer_filter.name=Redstone Timer Filter
+
+tile.block_confusion_charge.name=Confusion Charge
+tile.block_ender_charge.name=Ender Charge
+tile.block_concussion_charge.name=Concussion Charge
+
+enderio.owlegg.no_owl=No Owl found (install Ender IO Zoo!)
+item.item_owl_egg.name=Owl Egg
+
+entity.enderio.owl_egg.name=Owl Egg
+entity.enderio.enderio.owl_egg.name=Owl Egg
+
+entity.enderio.primed_charge.name=Primed Charge
+entity.enderio.enderio.primed_charge.name=Primed Charge

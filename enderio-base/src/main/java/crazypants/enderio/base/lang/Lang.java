@@ -29,6 +29,7 @@ public enum Lang implements ILang {
   GRINDING_BALL_2(".grindingball.tooltip.line2"),
   GRINDING_BALL_3(".grindingball.tooltip.line3"),
   GRINDING_BALL_4(".grindingball.tooltip.line4"),
+  GRINDING_BALL_DURABILITY(".grindingball.gui.durability"),
   STAFF_NO_POWER("item.item_travel_staff.chat.notEnoughPower"),
   COLD_FIRE_NO_FLUID("item.item_cold_fire_igniter.chat.outoffluid"),
   DARK_STEEL_POWERED("item.item_dark_steel_armor.tooltip"),
@@ -41,7 +42,6 @@ public enum Lang implements ILang {
   BLOCK_LIGHT_EMITTER(".block.tooltip.lightEmitter"),
   BLOCK_LIGHT_BLOCKER(".block.tooltip.lightBlocker"),
   MACHINE_UPGRADE(".machine.tooltip.upgrade"),
-  ENCHANT_SOULBOUND("description.enchantment.enderio.soulbound"),
   FLUID_TICKPER(".fluid.millibucket.format.tickper"),
   FLUID_AMOUNT(".fluid.millibucket.format"),
   FLUID_LEVEL(".fluid.millibucket.format.of"),
@@ -70,6 +70,7 @@ public enum Lang implements ILang {
   POWER_NAME(".power.format.name"),
   POWER_DETAILS(".power.format.details"),
   GUI_GENERIC_MAX(".gui.generic.max"),
+  GUI_GENERIC_LOSS(".gui.generic.loss"),
   GUI_GENERIC_PROGRESS(".gui.generic.progress"),
   GUI_GENERIC_OVERLAY(".gui.generic.ioMode.overlay.tooltip"),
   GUI_GENERIC_OVERLAY_ON(".gui.generic.ioMode.overlay.tooltip.visible"),
@@ -130,6 +131,23 @@ public enum Lang implements ILang {
 
   GUI_SPECIES_ITEM_FILTER(".gui.species_item_filter"),
   GUI_FLUID_FILTER(".gui.fluid_filter"),
+
+  GUI_REDSTONE_FILTER_AND(".gui.redstone_filter.and"),
+  GUI_REDSTONE_FILTER_OR(".gui.redstone_filter.or"),
+  GUI_REDSTONE_FILTER_NAND(".gui.redstone_filter.nand"),
+  GUI_REDSTONE_FILTER_NOR(".gui.redstone_filter.nor"),
+  GUI_REDSTONE_FILTER_XOR(".gui.redstone_filter.xor"),
+  GUI_REDSTONE_FILTER_XNOR(".gui.redstone_filter.xnor"),
+  GUI_REDSTONE_FILTER_COUNTING(".gui.redstone_filter.counting"),
+  GUI_REDSTONE_FILTER_TIMER(".gui.redstone_filter.timer"),
+
+  GUI_REDSTONE_FILTER_SIGNAL_COLOR(".gui.redstone_filter.signal_color"),
+  GUI_REDSTONE_FILTER_INPUT_SIGNAL(".gui.redstone_filter.input_signal"),
+  GUI_INFINTY_RECIPE_DIMENSIONS(".gui.infinity_recipe_dimensions"),
+  GUI_REDSTONE_FILTER_COUNT(".gui.redstone_filter.count"),
+  GUI_REDSTONE_FILTER_TIME(".gui.redstone_filter.time"),
+
+  OWL_NO_OWL(".owlegg.no_owl")
 
   ;
 

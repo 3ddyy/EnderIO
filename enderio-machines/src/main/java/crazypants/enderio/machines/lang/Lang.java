@@ -2,6 +2,8 @@ package crazypants.enderio.machines.lang;
 
 import javax.annotation.Nonnull;
 
+import com.enderio.core.common.util.NullHelper;
+
 import crazypants.enderio.base.lang.ILang;
 import crazypants.enderio.machines.EnderIOMachines;
 
@@ -108,6 +110,9 @@ public enum Lang implements ILang {
   JEI_ALLOY_NOTSIMPLE(".jei.alloy_smelter.notSimple"),
   JEI_SOLAR_OUTPUT(".jei.solar_panel.output"),
   JEI_SOLAR_RANGE(".jei.solar_panel.range"),
+  JEI_GRINDING_BALL_MAIN(".jei.grinding_ball.main"),
+  JEI_GRINDING_BALL_BONUS(".jei.grinding_ball.bonus"),
+  JEI_GRINDING_BALL_POWER(".jei.grinding_ball.power"),
   GUI_BUFFER_MAXIO(".gui.buffer.maxio"),
   GUI_OBELISK_NO_VIALS(".gui.obelisk.no_vials"),
   GUI_IMPULSE_HOPPER_LOCKED(".gui.impulse_hopper.locked"),
@@ -115,6 +120,9 @@ public enum Lang implements ILang {
   GUI_IMPULSE_HOPPER_LOCKED_TOOLTIP(".gui.impulse_hopper.locked.tooltip"),
   GUI_BUFFERING_STACK(".gui.crafter.buffering_stack"),
   GUI_BUFFERING_SINGLE(".gui.crafter.buffering_single"),
+  GUI_VACUUM_XP_HEADER(".gui.vacuum.xp.header"),
+  GUI_VACUUM_PRIME_TOOLTIP(".gui.vacuum.prime"),
+  STATUS_SPAWNER_UNBOUND(".status.powered_spawner.unbound"),
 
   ;
 
@@ -122,7 +130,7 @@ public enum Lang implements ILang {
 
   private Lang(@Nonnull String key) {
     if (key.startsWith(".")) {
-      this.key = getLang().addPrefix(key.substring(1));
+      this.key = getLang().addPrefix(NullHelper.notnullJ(key.substring(1), "String.substring()"));
     } else {
       this.key = key;
     }
