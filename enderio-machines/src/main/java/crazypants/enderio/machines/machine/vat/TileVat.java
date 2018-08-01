@@ -12,14 +12,15 @@ import com.enderio.core.common.fluid.SmartTank;
 import com.enderio.core.common.fluid.SmartTankFluidHandler;
 import com.enderio.core.common.util.NNList;
 
+import crazypants.enderio.api.capacitor.ICapacitorData;
+import crazypants.enderio.api.capacitor.ICapacitorKey;
 import crazypants.enderio.base.EnderIO;
 import crazypants.enderio.base.capacitor.CapacitorHelper;
-import crazypants.enderio.base.capacitor.ICapacitorData;
-import crazypants.enderio.base.capacitor.ICapacitorKey;
 import crazypants.enderio.base.fluid.SmartTankFluidMachineHandler;
 import crazypants.enderio.base.machine.baselegacy.AbstractPoweredTaskEntity;
 import crazypants.enderio.base.machine.baselegacy.SlotDefinition;
 import crazypants.enderio.base.machine.interfaces.IPoweredTask;
+import crazypants.enderio.base.machine.modes.IoMode;
 import crazypants.enderio.base.paint.IPaintable;
 import crazypants.enderio.base.recipe.IMachineRecipe.ResultStack;
 import crazypants.enderio.base.recipe.MachineRecipeInput;
@@ -40,6 +41,7 @@ import net.minecraftforge.fluids.FluidTank;
 import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 
+import static crazypants.enderio.machines.capacitor.CapacitorKey.ENHANCED_VAT_DOUBLE_OP_CHANCE;
 import static crazypants.enderio.machines.capacitor.CapacitorKey.ENHANCED_VAT_POWER_BUFFER;
 import static crazypants.enderio.machines.capacitor.CapacitorKey.ENHANCED_VAT_POWER_INTAKE;
 import static crazypants.enderio.machines.capacitor.CapacitorKey.ENHANCED_VAT_POWER_USE;
@@ -73,6 +75,20 @@ public class TileVat extends AbstractPoweredTaskEntity implements ITankAccess.IE
     @Override
     public ICapacitorData getCapacitorData() {
       return CapacitorHelper.increaseCapacitorLevel(super.getCapacitorData(), 1f);
+    }
+
+    @Override
+    public boolean supportsMode(@Nullable EnumFacing faceHit, @Nullable IoMode mode) {
+      return (faceHit != EnumFacing.UP || mode == IoMode.NONE) && super.supportsMode(faceHit, mode);
+    }
+
+    @Override
+    protected boolean shouldDoubleTick(@Nonnull IPoweredTask task, int usedEnergy) {
+      double chance = getCapacitorData().getUnscaledValue(ENHANCED_VAT_DOUBLE_OP_CHANCE) * (usedEnergy / task.getRequiredEnergy());
+      if (random.nextDouble() < chance) {
+        return true;
+      }
+      return super.shouldDoubleTick(task, usedEnergy);
     }
 
   }

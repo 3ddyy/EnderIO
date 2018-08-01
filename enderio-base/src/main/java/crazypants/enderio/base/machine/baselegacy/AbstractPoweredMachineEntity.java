@@ -8,11 +8,11 @@ import com.enderio.core.common.NBTAction;
 import com.enderio.core.common.util.NullHelper;
 import com.enderio.core.common.vecmath.VecmathUtil;
 
+import crazypants.enderio.api.capacitor.ICapacitorData;
+import crazypants.enderio.api.capacitor.ICapacitorKey;
 import crazypants.enderio.base.capacitor.CapacitorHelper;
 import crazypants.enderio.base.capacitor.CapacitorKey;
 import crazypants.enderio.base.capacitor.DefaultCapacitorData;
-import crazypants.enderio.base.capacitor.ICapacitorData;
-import crazypants.enderio.base.capacitor.ICapacitorKey;
 import crazypants.enderio.base.machine.gui.IPowerBarData;
 import crazypants.enderio.base.network.PacketHandler;
 import crazypants.enderio.base.power.ILegacyPoweredTile;
@@ -80,6 +80,7 @@ public abstract class AbstractPoweredMachineEntity extends AbstractInventoryMach
     }
   }
 
+  @Override
   public float getPowerLossPerTick() {
     return energyLoss != null ? energyLoss.getFloat(getCapacitorData()) : 0;
   }
@@ -140,7 +141,7 @@ public abstract class AbstractPoweredMachineEntity extends AbstractInventoryMach
   }
 
   public int getPowerUsePerTick() {
-    return maxEnergyUsed.get(getCapacitorData());
+    return getMaxUsage(maxEnergyUsed);
   }
 
   @Override
@@ -262,8 +263,8 @@ public abstract class AbstractPoweredMachineEntity extends AbstractInventoryMach
     return key.get(capacitorData);
   }
 
-  protected int getEfficiencyMultiplier() {
-    return energyEfficiency.get(getCapacitorData());
+  protected float getEfficiencyMultiplier() {
+    return energyEfficiency.getFloat(getCapacitorData());
   }
 
   protected void setEfficiencyMultiplier(@Nonnull ICapacitorKey key) {

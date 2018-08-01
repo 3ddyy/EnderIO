@@ -9,6 +9,8 @@ import javax.annotation.Nullable;
 import org.apache.commons.lang3.tuple.Pair;
 
 import crazypants.enderio.api.capacitor.CapabilityCapacitorData;
+import crazypants.enderio.api.capacitor.ICapacitorData;
+import crazypants.enderio.api.capacitor.ICapacitorKey;
 import crazypants.enderio.util.Prep;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -137,7 +139,7 @@ public class CapacitorHelper {
     return new ICapacitorData() {
       @Override
       public float getUnscaledValue(@Nonnull ICapacitorKey key) {
-        return data.getUnscaledValue(key) + level;
+        return data.getUnscaledValue(key) > 0 ? data.getUnscaledValue(key) + level : 0;
       }
 
       @Nonnull

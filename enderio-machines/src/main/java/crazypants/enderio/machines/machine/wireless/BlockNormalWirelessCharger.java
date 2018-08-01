@@ -5,10 +5,10 @@ import javax.annotation.Nonnull;
 import com.enderio.core.api.client.gui.IResourceTooltipProvider;
 import com.enderio.core.client.render.BoundingBox;
 
+import crazypants.enderio.api.IModObject;
 import crazypants.enderio.base.BlockEio;
-import crazypants.enderio.base.config.config.ChargerConfig;
-import crazypants.enderio.base.init.IModObject;
 import crazypants.enderio.base.render.IHaveRenderers;
+import crazypants.enderio.machines.config.ChargerConfig;
 import crazypants.enderio.machines.init.MachineObject;
 import crazypants.enderio.util.ClientUtil;
 import net.minecraft.block.properties.IProperty;

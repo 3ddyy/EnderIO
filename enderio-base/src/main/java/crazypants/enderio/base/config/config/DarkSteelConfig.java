@@ -8,7 +8,7 @@ import net.minecraftforge.fluids.Fluid;
 
 public final class DarkSteelConfig {
 
-  public static final IValueFactory F_DARK_STEEL = BaseConfig.F.section("items.darksteel");
+  public static final IValueFactory F_DARK_STEEL = ItemConfig.F.section(".darksteel");
 
   public static final IValueFactory F_PICKAXE = F_DARK_STEEL.section(".pickaxe");
 
@@ -123,39 +123,6 @@ public final class DarkSteelConfig {
   public static final IValue<Integer> energyUpgradeLevelCostEmpowered4 = F_ENERGY.make("upgradeCost5", 20, //
       "Cost for the 'Empowered V' upgrade in levels.").setRange(1, 99).sync();
 
-  public static final IValue<Integer> energyUpgradePowerStorageEmpowered0 = F_ENERGY.make("powerStorage1", 100000, //
-      "Size of the internal energy storage of the 'Empowered I' upgrade.").setRange(1000, 99999999).sync();
-  public static final IValue<Integer> energyUpgradePowerStorageEmpowered1 = F_ENERGY.make("powerStorage2", 150000, //
-      "Size of the internal energy storage of the 'Empowered II' upgrade.").setRange(1000, 99999999).sync();
-  public static final IValue<Integer> energyUpgradePowerStorageEmpowered2 = F_ENERGY.make("powerStorage3", 250000, //
-      "Size of the internal energy storage of the 'Empowered III' upgrade.").setRange(1000, 99999999).sync();
-  public static final IValue<Integer> energyUpgradePowerStorageEmpowered3 = F_ENERGY.make("powerStorage4", 1000000, //
-      "Size of the internal energy storage of the 'Empowered IV' upgrade.").setRange(1000, 99999999).sync();
-  public static final IValue<Integer> energyUpgradePowerStorageEmpowered4 = F_ENERGY.make("powerStorage5", 2500000, //
-      "Size of the internal energy storage of the 'Empowered V' upgrade.").setRange(1000, 99999999).sync();
-
-  public static final IValue<Integer> energyUpgradePowerTransferEmpowered0 = F_ENERGY.make("powerTransfer1", 1000, //
-      "Maximum energy input/output of the 'Empowered I' upgrade.").setRange(10, 99999999).sync();
-  public static final IValue<Integer> energyUpgradePowerTransferEmpowered1 = F_ENERGY.make("powerTransfer2", 1500, //
-      "Maximum energy input/output of the 'Empowered II' upgrade.").setRange(10, 99999999).sync();
-  public static final IValue<Integer> energyUpgradePowerTransferEmpowered2 = F_ENERGY.make("powerTransfer3", 2500, //
-      "Maximum energy input/output of the 'Empowered III' upgrade.").setRange(10, 99999999).sync();
-  public static final IValue<Integer> energyUpgradePowerTransferEmpowered3 = F_ENERGY.make("powerTransfer4", 10000, //
-      "Maximum energy input/output of the 'Empowered IV' upgrade.").setRange(10, 99999999).sync();
-  public static final IValue<Integer> energyUpgradePowerTransferEmpowered4 = F_ENERGY.make("powerTransfer5", 25000, //
-      "Maximum energy input/output of the 'Empowered V' upgrade.").setRange(10, 99999999).sync();
-
-  public static final IValue<Double> energyUpgradeAbsorptionRatioEmpowered0 = F_ENERGY.make("absorptionRatio1", .5, //
-      "Ratio of damage absorbed by energy of the 'Empowered I' upgrade. (0=none, 1=all)").setRange(0, 1).sync();
-  public static final IValue<Double> energyUpgradeAbsorptionRatioEmpowered1 = F_ENERGY.make("absorptionRatio2", .6, //
-      "Ratio of damage absorbed by energy of the 'Empowered II' upgrade. (0=none, 1=all)").setRange(0, 1).sync();
-  public static final IValue<Double> energyUpgradeAbsorptionRatioEmpowered2 = F_ENERGY.make("absorptionRatio3", .7, //
-      "Ratio of damage absorbed by energy of the 'Empowered III' upgrade. (0=none, 1=all)").setRange(0, 1).sync();
-  public static final IValue<Double> energyUpgradeAbsorptionRatioEmpowered3 = F_ENERGY.make("absorptionRatio4", .85, //
-      "Ratio of damage absorbed by energy of the 'Empowered IV' upgrade. (0=none, 1=all)").setRange(0, 1).sync();
-  public static final IValue<Double> energyUpgradeAbsorptionRatioEmpowered4 = F_ENERGY.make("absorptionRatio5", .95, //
-      "Ratio of damage absorbed by energy of the 'Empowered V' upgrade. (0=none, 1=all)").setRange(0, 1).sync();
-
   public static final IValueFactory F_BOW = F_DARK_STEEL.section(".bow");
 
   public static final IValue<Integer> bowPowerUsePerDamagePoint = F_BOW.make("energyUsePerDamagePoint", 1000, //
@@ -232,5 +199,12 @@ public final class DarkSteelConfig {
       F_EBOW.make("damage3", 0.0, "Damage bonus of the End Steel Bow when 'Empowered III' and it has energy.").setRange(0, 30).sync(), //
       F_EBOW.make("damage4", 0.0, "Damage bonus of the End Steel Bow when 'Empowered IV' and it has energy.").setRange(0, 30).sync(), //
       F_EBOW.make("damage5", 0.0, "Damage bonus of the End Steel Bow when 'Empowered V' and it has energy.").setRange(0, 30).sync());
+
+  public static final IValueFactory F_TAP = F_DARK_STEEL.section(".treetap");
+
+  public static final IValue<Integer> tapDurability = F_TAP.make("durability", 2000, //
+      "Durability of the Dark Steel Tree Tap.").setRange(1, 99999999).sync();
+  public static final IValue<Integer> tapEnergyPerDamage = F_TAP.make("energyPerDamage", 750, //
+      "Energy use per damage/durability point avoided.").setRange(1, 99999999).sync();
 
 }

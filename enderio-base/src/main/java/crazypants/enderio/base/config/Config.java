@@ -44,21 +44,16 @@ public final class Config {
   public static Configuration config;
 
   public static final @Nonnull Section sectionPower = new Section("Power Settings", "power");
-  public static final @Nonnull Section sectionRecipe = new Section("Recipe Settings", "recipe");
   public static final @Nonnull Section sectionItems = new Section("Item Enabling", "item");
-  public static final @Nonnull Section sectionEfficiency = new Section("Efficiency Settings", "efficiency");
   public static final @Nonnull Section sectionAnchor = new Section("Anchor Settings", "anchor");
   public static final @Nonnull Section sectionStaff = new Section("Staff Settings", "staff");
   public static final @Nonnull Section sectionRod = new Section("Rod of Return Settings", "rod");
   public static final @Nonnull Section sectionDarkSteel = new Section("Dark Steel", "darksteel");
   public static final @Nonnull Section sectionAdvanced = new Section("Advanced Settings", "advanced");
-  public static final @Nonnull Section sectionMagnet = new Section("Magnet Settings", "magnet");
   public static final @Nonnull Section sectionFluid = new Section("Fluid Settings", "fluid");
   public static final @Nonnull Section sectionSoulBinder = new Section("Soul Binder Settings", "soulBinder");
   public static final @Nonnull Section sectionSoulVial = new Section("", "soulvial");
-  public static final @Nonnull Section sectionEnchantments = new Section("Enchantments", "enchantments");
   public static final @Nonnull Section sectionMisc = new Section("Misc", "misc");
-  public static final @Nonnull Section sectionCapacitor = new Section("Capacitor Values", "capacitor");
   public static final @Nonnull Section sectionHoes = new Section("Farm Settings.Hoes", "hoes");
 
   public static final int DEFAULT_CONDUIT_PIXELS = 3;
@@ -116,7 +111,6 @@ public final class Config {
   public static float darkSteelSwordSkullLootingModifier = 0.075f;
   public static float vanillaSwordSkullLootingModifier = 0.05f;
   public static float vanillaSwordSkullChance = 0.05f;
-  public static float ticCleaverSkullDropChance = 0.1f;
   public static float ticBeheadingSkullModifier = 0.075f;
   public static float fakePlayerSkullChance = 0.5f;
 
@@ -197,17 +191,6 @@ public final class Config {
       "mysticalagriculture:supremium_hoe" };
   public static @Nonnull Things farmHoes = new Things();
 
-  public static int magnetPowerUsePerSecondRF = 1;
-  public static int magnetPowerCapacityRF = 100000;
-  public static int magnetRange = 5;
-  public static String[] magnetBlacklist = new String[] { "appliedenergistics2:crystal_seed", "botania:livingrock", "botania:manatablet" };
-  public static int magnetMaxItems = 20;
-
-  public static boolean magnetAllowInMainInventory = false;
-  public static boolean magnetAllowInBaublesSlot = true;
-  public static boolean magnetAllowDeactivatedInBaublesSlot = false;
-  public static String magnetBaublesType = "AMULET";
-
   public static long nutrientFoodBoostDelay = 400;
   public static boolean rocketFuelIsExplosive = true;
 
@@ -229,6 +212,8 @@ public final class Config {
   public static int soulBinderAttractorCystalLevels = 4;
   public static int soulBinderTunedPressurePlateLevels = 2;
   public static int soulBinderTunedPressurePlateRF = 250000;
+  public static int soulBinderVibrantCystalRF = 200000;
+  public static int soulBinderVibrantCystalLevels = 8;
 
   public static float slicenspliceToolDamageChance = 0.01f;
 
@@ -257,8 +242,6 @@ public final class Config {
   public static boolean enableBaublesIntegration = true;
 
   public static int maxMobsAttracted = 20;
-
-  public static double teleportEffectProbability = 0.03f;
 
   public static void init(FMLPreInitializationEvent event) {
     MinecraftForge.EVENT_BUS.register(new Config());
@@ -521,8 +504,6 @@ public final class Config {
             "The chance per looting level that a skull will be dropped when using a non-dark steel sword (0 = no chance, 1 = 100% chance)")
         .getDouble(vanillaSwordSkullLootingModifier);
 
-    ticCleaverSkullDropChance = (float) config.get(sectionDarkSteel.name, "ticCleaverSkullDropChance", ticCleaverSkullDropChance,
-        "The base chance that an Enderman Skull will be dropped when using TiC Cleaver").getDouble(ticCleaverSkullDropChance);
     ticBeheadingSkullModifier = (float) config.get(sectionDarkSteel.name, "ticBeheadingSkullModifier", ticBeheadingSkullModifier,
         "The chance per level of Beheading that a skull will be dropped when using a TiC weapon").getDouble(ticBeheadingSkullModifier);
 
@@ -626,32 +607,6 @@ public final class Config {
 
     // END Hoes
 
-    magnetPowerUsePerSecondRF = config
-        .get(sectionMagnet.name, "magnetPowerUsePerTickRF", magnetPowerUsePerSecondRF, "The amount of energy used per tick when the magnet is active")
-        .getInt(magnetPowerUsePerSecondRF);
-    magnetPowerCapacityRF = config.get(sectionMagnet.name, "magnetPowerCapacityRF", magnetPowerCapacityRF, "Amount of energy stored in a fully charged magnet")
-        .getInt(magnetPowerCapacityRF);
-    magnetRange = config.get(sectionMagnet.name, "magnetRange", magnetRange, "Range of the magnet in blocks.").getInt(magnetRange);
-    magnetMaxItems = config
-        .get(sectionMagnet.name, "magnetMaxItems", magnetMaxItems, "Maximum number of items the magnet can effect at a time. (-1 for unlimited)")
-        .getInt(magnetMaxItems);
-
-    magnetBlacklist = config.getStringList("magnetBlacklist", sectionMagnet.name, magnetBlacklist, "These items will not be picked up by the magnet.");
-
-    magnetAllowInMainInventory = config.get(sectionMagnet.name, "magnetAllowInMainInventory", magnetAllowInMainInventory,
-        "If true the magnet will also work in the main inventory, not just the hotbar").getBoolean(magnetAllowInMainInventory);
-
-    magnetAllowInBaublesSlot = config.get(sectionMagnet.name, "magnetAllowInBaublesSlot", magnetAllowInBaublesSlot,
-        "If true the magnet can be put into the 'amulet' Baubles slot (requires Baubles to be installed)").getBoolean(magnetAllowInBaublesSlot);
-    magnetAllowDeactivatedInBaublesSlot = config.get(sectionMagnet.name, "magnetAllowDeactivatedInBaublesSlot", magnetAllowDeactivatedInBaublesSlot,
-        "If true the magnet can be put into the 'amulet' Baubles slot even if switched off (requires Baubles to be installed and magnetAllowInBaublesSlot to be on)")
-        .getBoolean(magnetAllowDeactivatedInBaublesSlot);
-
-    magnetBaublesType = config
-        .get(sectionMagnet.name, "magnetBaublesType", magnetBaublesType,
-            "The BaublesType the magnet should be, 'AMULET', 'RING' or 'BELT' (requires Baubles to be installed and magnetAllowInBaublesSlot to be on)")
-        .getString();
-
     nutrientFoodBoostDelay = config.get(sectionFluid.name, "nutrientFluidFoodBoostDelay", nutrientFoodBoostDelay,
         "The delay in ticks between when nutrient distillation boosts your food value.").getInt((int) nutrientFoodBoostDelay);
     rocketFuelIsExplosive = config
@@ -749,10 +704,6 @@ public final class Config {
 
     enableBaublesIntegration = config.getBoolean("enableBaublesIntegration", sectionMisc.name, enableBaublesIntegration,
         "If false baubles intergation will be disabled even if Baubles is installed");
-
-    teleportEffectProbability = config
-        .get(sectionAdvanced.name, "teleportEffectProbability", teleportEffectProbability, "The probability that Enderios do what they promise.")
-        .getDouble(teleportEffectProbability);
 
     BaseConfig.load();
     BaseConfig.F.setConfig(config);
