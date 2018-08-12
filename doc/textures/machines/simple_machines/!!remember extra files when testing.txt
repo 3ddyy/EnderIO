@@ -1,0 +1,4 @@
+remember
+- blockstates/block_machine_frame or whatever
+- models/block/machine_base
+when making a resourcepack to test
