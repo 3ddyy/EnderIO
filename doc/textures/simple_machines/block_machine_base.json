@@ -11,14 +11,14 @@
             "defaults":{
                 "textures":{ "front":"enderio:blocks/block_machine_side" },
                 "submodel":{
-                    "body":{ "model":"enderio:machine_body", "y":0 },
+                    "body":{ "model":"enderio:machine_body", "y":180 },
                     "front":{ "model":"enderio:machine_front", "y":180 }
                 }
             },
-            "body":{       "submodel":{ "body":{ "model":"enderio:machine_body", "y":0 } } },
-            "body_east":{  "submodel":{ "body":{ "model":"enderio:machine_body", "y":90 } } },
-            "body_south":{ "submodel":{ "body":{ "model":"enderio:machine_body", "y":180 } } },
-            "body_west":{  "submodel":{ "body":{ "model":"enderio:machine_body", "y":270 } } },
+            "body":{       "submodel":{ "body":{ "model":"enderio:machine_body", "y":180 } } },
+            "body_east":{  "submodel":{ "body":{ "model":"enderio:machine_body", "y":270 } } },
+            "body_south":{ "submodel":{ "body":{ "model":"enderio:machine_body", "y":0 } } },
+            "body_west":{  "submodel":{ "body":{ "model":"enderio:machine_body", "y":90 } } },
             "soul":{
                 "textures":{
 			        "top":"enderio:blocks/block_soul_machine_top",
@@ -27,7 +27,7 @@
 			        "back":"enderio:blocks/block_soul_machine_back",
 			        "frontframe":"enderio:blocks/block_soul_machine_side"
 			    },
-                "submodel":{ "body":{ "model":"enderio:machine_body", "y":0 } } },
+                "submodel":{ "body":{ "model":"enderio:machine_body", "y":180 } } },
             "soul_east":{           
                 "textures":{
                     "top":"enderio:blocks/block_soul_machine_top",
@@ -36,7 +36,7 @@
                     "back":"enderio:blocks/block_soul_machine_back",
                     "frontframe":"enderio:blocks/block_soul_machine_side"
                 },
-                "submodel":{ "body":{ "model":"enderio:machine_body", "y":90 } } },
+                "submodel":{ "body":{ "model":"enderio:machine_body", "y":270 } } },
             "soul_south":{           
                 "textures":{
                     "top":"enderio:blocks/block_soul_machine_top",
@@ -45,7 +45,7 @@
                     "back":"enderio:blocks/block_soul_machine_back",
                     "frontframe":"enderio:blocks/block_soul_machine_side"
                 },
-                "submodel":{ "body":{ "model":"enderio:machine_body", "y":180 } } },
+                "submodel":{ "body":{ "model":"enderio:machine_body", "y":0 } } },
             "soul_west":{
                 "textures":{
                     "top":"enderio:blocks/block_soul_machine_top",
@@ -54,7 +54,7 @@
                     "back":"enderio:blocks/block_soul_machine_back",
                     "frontframe":"enderio:blocks/block_soul_machine_side"
                 },
-                "submodel":{ "body":{ "model":"enderio:machine_body", "y":270 } } },
+                "submodel":{ "body":{ "model":"enderio:machine_body", "y":90 } } },
             "paint_overlay":{
                 "textures":{
                     "particle":"enderio:items/paint_overlay",
@@ -75,7 +75,7 @@
                     "back":"enderio:blocks/simple_machines/back",
                     "frontframe":"enderio:blocks/simple_machines/side"
                 },
-                "submodel":{ "body":{ "model":"enderio:machine_body", "y":0 } } },
+                "submodel":{ "body":{ "model":"enderio:simple_machines/machine_body", "y":0 } } },
             "simple_body_east":{
                 "textures":{
                     "particle":"enderio:blocks/simple_machines/bottom",
@@ -85,7 +85,7 @@
                     "back":"enderio:blocks/simple_machines/back",
                     "frontframe":"enderio:blocks/simple_machines/side"
                 },
-                "submodel":{ "body":{ "model":"enderio:machine_body", "y":90 } } },
+                "submodel":{ "body":{ "model":"enderio:simple_machines/machine_body", "y":90 } } },
             "simple_body_south":{
                 "textures":{
                     "particle":"enderio:blocks/simple_machines/bottom",
@@ -95,7 +95,7 @@
                     "back":"enderio:blocks/simple_machines/back",
                     "frontframe":"enderio:blocks/simple_machines/side"
                 },
-                "submodel":{ "body":{ "model":"enderio:machine_body", "y":180 } } },
+                "submodel":{ "body":{ "model":"enderio:simple_machines/machine_body", "y":180 } } },
             "simple_body_west":{
                 "textures":{
                     "particle":"enderio:blocks/simple_machines/bottom",
@@ -105,7 +105,7 @@
                     "back":"enderio:blocks/simple_machines/back",
                     "frontframe":"enderio:blocks/simple_machines/side"
                 },
-                "submodel":{ "body":{ "model":"enderio:machine_body", "y":270 } } },
+                "submodel":{ "body":{ "model":"enderio:simple_machines/machine_body", "y":270 } } },
             "enhanced_body":{
                     "textures":{
                         "particle":"enderio:blocks/block_enhanced_machine_bottom",
@@ -115,7 +115,7 @@
                         "back":"enderio:blocks/block_enhanced_machine_back",
                         "frontframe":"enderio:blocks/block_enhanced_machine_side"
                     },
-                    "submodel":{ "body":{ "model":"enderio:machine_body", "y":0 } } },
+                    "submodel":{ "body":{ "model":"enderio:machine_body", "y":180 } } },
                 "enhanced_body_east":{
                     "textures":{
                         "particle":"enderio:blocks/block_enhanced_machine_bottom",
@@ -125,7 +125,7 @@
                         "back":"enderio:blocks/block_enhanced_machine_back",
                         "frontframe":"enderio:blocks/block_enhanced_machine_side"
                     },
-                    "submodel":{ "body":{ "model":"enderio:machine_body", "y":90 } } },
+                    "submodel":{ "body":{ "model":"enderio:machine_body", "y":270 } } },
                 "enhanced_body_south":{
                     "textures":{
                         "particle":"enderio:blocks/block_enhanced_machine_bottom",
@@ -135,7 +135,7 @@
                         "back":"enderio:blocks/block_enhanced_machine_back",
                         "frontframe":"enderio:blocks/block_enhanced_machine_side"
                     },
-                    "submodel":{ "body":{ "model":"enderio:machine_body", "y":180 } } },
+                    "submodel":{ "body":{ "model":"enderio:machine_body", "y":0 } } },
                 "enhanced_body_west":{
                     "textures":{
                         "particle":"enderio:blocks/block_enhanced_machine_bottom",
@@ -145,7 +145,7 @@
                         "back":"enderio:blocks/block_enhanced_machine_back",
                         "frontframe":"enderio:blocks/block_enhanced_machine_side"
                     },
-                    "submodel":{ "body":{ "model":"enderio:machine_body", "y":270 } } }
+                    "submodel":{ "body":{ "model":"enderio:machine_body", "y":90 } } }
         }
     }
 }
