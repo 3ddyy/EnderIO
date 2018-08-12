@@ -5,7 +5,7 @@
 			"particle": "enderio:blocks/simple_machines/alloy_smelter_off",
 			"front": "enderio:blocks/simple_machines/alloy_smelter_off",
 			"fronton": "enderio:blocks/simple_machines/alloy_smelter_on",
-			"inner": "enderio:blocks/simple_machines/inner",
+			"inner": "enderio:blocks/simple_machines/inner_off",
 			"inneron": "enderio:blocks/simple_machines/inner_on"
 		}
 	},
@@ -42,7 +42,7 @@
 			"front_on_west": {
 				"textures": { "front": "#fronton", "inner": "#inneron" },
 				"submodel": { "front": { "model": "enderio:simple_machines/alloy_smelter", "y":270}}
-			},
+			}
 		}
 	}
 }
